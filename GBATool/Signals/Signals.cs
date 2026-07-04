@@ -34,6 +34,7 @@ public class MouseUpEventSignal : Signal<MouseButtonVO> { }
 public class MouseMoveEventSignal : Signal<MouseEventVO> { }
 public class MouseLeaveEventSignal : Signal<MouseEventVO> { }
 public class PreviewMouseMoveSignal : Signal<MouseEventVO> { }
+public class PreviewMouseDownSignal : Signal<MouseEventVO> { }
 public class SelectionChangedEventSignal : Signal<SelectionChangedVO> { }
 #endregion
 
@@ -161,7 +162,6 @@ public class SetColorFromColorPickerSignal : Signal<Control, Color> { }
 public class ReturnTransparentColorFromBankSignal : Signal<Color> { }
 public class TryCreatePaletteElementSignal : Signal<string, List<Color>> { }
 public class UseBitmapAsCursorSignal : Signal<Image> { }
-public class UseEmptyCursorSignal : Signal { }
 #endregion
 
 #region Palettes

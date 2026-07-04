@@ -144,6 +144,7 @@ public class MapViewModel : ItemViewModel
     private int _tilesSelectedOriginX;
     private int _tilesSelectedOriginY;
     private MapFunctionality _currentMapFunctionality = MapFunctionality.Select;
+    private bool _isMovingFromInsideCanvas;
 
     public enum MapFunctionality
     {
@@ -1040,6 +1041,11 @@ public class MapViewModel : ItemViewModel
 
     private void OnMouseMoveEvent(MouseEventVO vO)
     {
+        if (!_isMovingFromInsideCanvas)
+        {
+            return;
+        }
+
         if (vO.Sender is not IInputElement sender)
         {
             return;
@@ -1085,6 +1091,11 @@ public class MapViewModel : ItemViewModel
 
     private void OnMouseUpEvent(MouseButtonVO vO)
     {
+        if (!_isMovingFromInsideCanvas)
+        {
+            return;
+        }
+
         if (vO.Sender is not IInputElement sender)
         {
             return;
@@ -1114,14 +1125,26 @@ public class MapViewModel : ItemViewModel
 
         Point pos = vO.MouseEvent.GetPosition(sender);
 
+        if (pos.X < 0)
+        {
+            pos.X = 0;
+        }
+        if (pos.Y < 0)
+        {
+            pos.Y = 0;
+        }
+
         SignalManager.Get<ResetSelectionAreaSignal>().Dispatch(pos);
 
-        if (selectedTiles.Count == 0)
+        if (selectedTiles.Count == 0 &&
+            pos.X >= 0 && pos.Y >= 0)
         {
             GetSelectedTile(pos, ref selectedTiles);
         }
 
         SignalManager.Get<SelectTilesSignal>().Dispatch([.. selectedTiles]);
+
+        _isMovingFromInsideCanvas = false;
     }
 
     private void OnMouseDownEvent(MouseButtonVO vO)
@@ -1156,6 +1179,8 @@ public class MapViewModel : ItemViewModel
         SignalManager.Get<ResetSelectionAreaSignal>().Dispatch(_initialMousePositionInCanvas);
 
         SignalManager.Get<SelectTilesSignal>().Dispatch([]);
+
+        _isMovingFromInsideCanvas = true;
     }
 
     private void SaveTileProperties(TileObject tile)
@@ -1227,10 +1252,13 @@ public class MapViewModel : ItemViewModel
     {
         List<TileObject> tiles = [];
 
-        if (MouseSelectionWidth == 0 || MouseSelectionHeight == 0)
+        if (MouseSelectionWidth == 0 || 
+            MouseSelectionHeight == 0)
         {
             return tiles;
         }
+
+        LimitAreaSelectionToCanvasSize();
 
         Rect rectangle = new(
             MouseSelectionOriginX,
@@ -1249,6 +1277,31 @@ public class MapViewModel : ItemViewModel
         }
 
         return tiles;
+    }
+
+    private void LimitAreaSelectionToCanvasSize()
+    {
+        if (MouseSelectionOriginX < 0)
+        {
+            MouseSelectionWidth += MouseSelectionOriginX;
+            MouseSelectionOriginX = 0;
+        }
+
+        if (MouseSelectionOriginY < 0)
+        {
+            MouseSelectionHeight += MouseSelectionOriginY;
+            MouseSelectionOriginY = 0;
+        }
+
+        if ((MouseSelectionWidth + MouseSelectionOriginX) > CanvasWidth)
+        {
+            MouseSelectionWidth = CanvasWidth - MouseSelectionOriginX;
+        }
+
+        if ((MouseSelectionHeight + MouseSelectionOriginY) > CanvasHeight)
+        {
+            MouseSelectionHeight = CanvasHeight - MouseSelectionOriginY;
+        }
     }
 
     private void OnSelectTiles(TileObject[] tiles)

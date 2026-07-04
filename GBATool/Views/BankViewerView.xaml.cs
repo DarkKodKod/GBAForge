@@ -540,53 +540,43 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
             return;
         }
 
-        Point pos = Mouse.GetPosition(image);
+        SelectArbitrarySizeOfTiles();
 
-        int x = (int)Math.Floor(pos.X / BankUtils.SizeOfCellInPixels) * BankUtils.SizeOfCellInPixels;
-        int y = (int)Math.Floor(pos.Y / BankUtils.SizeOfCellInPixels) * BankUtils.SizeOfCellInPixels;
+        MouseSelectionActive = Visibility.Collapsed;
+        MouseSelectionOriginX = 0;
+        MouseSelectionOriginY = 0;
+        MouseSelectionWidth = 0;
+        MouseSelectionHeight = 0;
+    }
 
-        int canvasWidthInCells = CanvasWidth / BankUtils.SizeOfCellInPixels;
-        int lengthHeight = CanvasHeight / BankUtils.SizeOfCellInPixels;
-        int yPos = (y / BankUtils.SizeOfCellInPixels);
-        int xPos = (x / BankUtils.SizeOfCellInPixels);
-
-        int cellIndex = (canvasWidthInCells * yPos) + xPos;
-
-        (_, string spriteID, _) = _metaData.SpriteIndices.Find(item => item.Item1 == cellIndex);
-
-        if (string.IsNullOrEmpty(spriteID))
+    private void SelectArbitrarySizeOfTiles()
+    {
+        if (_metaData == null)
         {
-            SignalManager.Get<UseEmptyCursorSignal>().Dispatch();
+            return;
         }
-        else
+
+        int x = (int)Math.Floor((double)MouseSelectionOriginX / BankUtils.SizeOfCellInPixels) * BankUtils.SizeOfCellInPixels;
+        int y = (int)Math.Floor((double)MouseSelectionOriginY / BankUtils.SizeOfCellInPixels) * BankUtils.SizeOfCellInPixels;
+        int w = (int)Math.Ceiling((double)MouseSelectionWidth / BankUtils.SizeOfCellInPixels) * BankUtils.SizeOfCellInPixels;
+        int h = (int)Math.Ceiling((double)MouseSelectionHeight / BankUtils.SizeOfCellInPixels) * BankUtils.SizeOfCellInPixels;
+
+        SpriteRectLeft = x;
+        SpriteRectTop = y;
+        SpriteRectWidth = w;
+        SpriteRectHeight = h;
+        SpriteRectVisibility = Visibility.Visible;
+
+        WriteableBitmap cropped = _metaData.image.Crop(x, y, w, h);
+
+        using (cropped.GetBitmapContext())
         {
-            SpriteRectLeft = x;
-            SpriteRectWidth = BankUtils.SizeOfCellInPixels;
-            SpriteRectHeight = BankUtils.SizeOfCellInPixels;
-            SpriteRectTop = y;
-            SpriteRectVisibility = Visibility.Visible;
-
-            MouseSelectionActive = Visibility.Collapsed;
-            MouseSelectionOriginX = 0;
-            MouseSelectionOriginY = 0;
-            MouseSelectionWidth = 0;
-            MouseSelectionHeight = 0;
-
-            WriteableBitmap cropped = _metaData.image.Crop(
-                (int)SpriteRectLeft,
-                (int)SpriteRectTop,
-                (int)SpriteRectWidth,
-                (int)SpriteRectHeight);
-
-            using (cropped.GetBitmapContext())
+            Image imageCtrl = new()
             {
-                Image imageCtrl = new()
-                {
-                    Source = cropped
-                };
+                Source = cropped
+            };
 
-                SignalManager.Get<UseBitmapAsCursorSignal>().Dispatch(imageCtrl);
-            }
+            SignalManager.Get<UseBitmapAsCursorSignal>().Dispatch(imageCtrl);
         }
     }
 
