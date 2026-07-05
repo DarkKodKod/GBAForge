@@ -1319,29 +1319,39 @@ public class MapViewModel : ItemViewModel
 
         int width = 0;
         int height = 0;
-        int continuousIndex = 0;
+        int continuousIndex = -1;
+        int accumulativeWidth = 0;
 
         for (int i = 0; i < tiles.Length; i++)
         {
-            if (continuousIndex == 0)
+            if (continuousIndex == -1)
             {
-                width += 8;
-                height += 8;
+                width += MapUtils.CellSize;
+                height += MapUtils.CellSize;
                 continuousIndex = tiles[i].Index;
+
+                accumulativeWidth = MapUtils.CellSize;
             }
-            else if (continuousIndex + 1 == tiles[i].Index)
+            else if (continuousIndex + 1 == tiles[i].Index &&
+                accumulativeWidth < MapUtils.MapSizeWidth * MapUtils.CellSize)
             {
                 continuousIndex++;
 
-                if (height == 8)
+                accumulativeWidth += MapUtils.CellSize;
+
+                // This is to check the most left boundary, so while
+                // the hight is still 8 pixels we count for the total width
+                if (height == MapUtils.CellSize)
                 {
-                    width += 8;
+                    width += MapUtils.CellSize;
                 }
             }
             else
             {
                 continuousIndex = tiles[i].Index;
-                height += 8;
+                height += MapUtils.CellSize;
+
+                accumulativeWidth = MapUtils.CellSize;
             }
 
             selectedTiles.Add((tiles[i].MapID, tiles[i].Index));

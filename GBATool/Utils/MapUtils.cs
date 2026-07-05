@@ -9,8 +9,8 @@ public static class MapUtils
 {
     private readonly static ConcurrentDictionary<string, WriteableBitmap> _frameBitmapCache = [];
 
-    private readonly static int CellSize = 8;
-    private readonly static int MapSizeWidth = 32;
+    public readonly static int CellSize = 8;
+    public readonly static int MapSizeWidth = 32;
 
     public static List<int> GetCellsIndicesFromRect(Rect rect)
     {
