@@ -33,8 +33,8 @@ public class MouseDownEventSignal : Signal<MouseButtonVO> { }
 public class MouseUpEventSignal : Signal<MouseButtonVO> { }
 public class MouseMoveEventSignal : Signal<MouseEventVO> { }
 public class MouseLeaveEventSignal : Signal<MouseEventVO> { }
-public class PreviewMouseMoveSignal : Signal<MouseEventVO> { }
-public class PreviewMouseDownSignal : Signal<MouseEventVO> { }
+public class PreviewMouseMoveEventSignal : Signal<MouseEventVO> { }
+public class PreviewMouseDownEventSignal : Signal<MouseEventVO> { }
 public class SelectionChangedEventSignal : Signal<SelectionChangedVO> { }
 #endregion
 

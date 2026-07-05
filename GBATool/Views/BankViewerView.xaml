@@ -24,6 +24,11 @@
                 RenderOptions.BitmapScalingMode="NearestNeighbor"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top">
+            <i:Interaction.Behaviors>
+                <behaviors:EventToCommandBehavior Command="{Binding ImageMouseDownCommand}" Event="MouseDown" PassArguments="True" />
+                <behaviors:EventToCommandBehavior Command="{Binding MouseMoveCommand}" Event="MouseMove" PassArguments="True" />
+                <behaviors:EventToCommandBehavior Command="{Binding MouseUpCommand}" Event="MouseUp" PassArguments="True" />
+            </i:Interaction.Behaviors>
             <Canvas.Background>
                 <VisualBrush
                     TileMode="Tile"
@@ -40,11 +45,6 @@
                    Height="{Binding CanvasHeight}"
 			       Name="imgBank"
 			       Stretch="UniformToFill">
-                <i:Interaction.Behaviors>
-                    <behaviors:EventToCommandBehavior Command="{Binding ImageMouseDownCommand}" Event="MouseDown" PassArguments="True" />
-					<behaviors:EventToCommandBehavior Command="{Binding PreviewMouseMoveCommand}" Event="PreviewMouseMove" PassArguments="True" />
-					<behaviors:EventToCommandBehavior Command="{Binding MouseUpCommand}" Event="MouseUp" PassArguments="True" />
-                </i:Interaction.Behaviors>
             </Image>
             <Rectangle Width="{Binding SpriteRectWidth}"
                        Height="{Binding SpriteRectHeight}" 

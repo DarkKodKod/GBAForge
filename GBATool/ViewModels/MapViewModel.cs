@@ -1091,6 +1091,14 @@ public class MapViewModel : ItemViewModel
 
     private void OnMouseUpEvent(MouseButtonVO vO)
     {
+        if (vO.OriginalSource is FrameworkElement fe)
+        {
+            if (fe.Name != "mapCanvas")
+            {
+                return;
+            }
+        }
+
         if (!_isMovingFromInsideCanvas)
         {
             return;
@@ -1104,14 +1112,6 @@ public class MapViewModel : ItemViewModel
         if (vO.OriginalSource is not Canvas and not Image and not Rectangle)
         {
             return;
-        }
-
-        if (vO.OriginalSource is FrameworkElement fe)
-        {
-            if (fe.Name != "mapCanvas")
-            {
-                return;
-            }
         }
 
         SignalManager.Get<TryReleaseMouseSignal>().Dispatch();
@@ -1273,7 +1273,7 @@ public class MapViewModel : ItemViewModel
             foreach (int cellIndex in tilesInRect)
             {
                 tiles.Add(Tiles0[cellIndex]);
-            }
+            }            
         }
 
         return tiles;

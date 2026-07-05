@@ -71,7 +71,7 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
 
     #region Commands
     public ImageMouseDownCommand ImageMouseDownCommand { get; } = new();
-    public MouseEventCommand<PreviewMouseMoveSignal> PreviewMouseMoveCommand { get; } = new();
+    public MouseEventCommand<MouseMoveEventSignal> MouseMoveCommand { get; } = new();
     public MouseButtonEventCommand<MouseUpEventSignal> MouseUpCommand { get; } = new();
     #endregion
 
@@ -408,7 +408,7 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
         SignalManager.Get<AdjustCanvasBankSizeSignal>().Listener += OnAdjustCanvasBankSize;
         SignalManager.Get<ReloadBankViewImageSignal>().Listener += OnReloadBankViewImage;
         SignalManager.Get<RemoveSpriteSelectionFromBank>().Listener += OnRemoveSpriteSelectionFromBank;
-        SignalManager.Get<PreviewMouseMoveSignal>().Listener += OnPreviewMouseMove;
+        SignalManager.Get<MouseMoveEventSignal>().Listener += OnMouseMove;
         SignalManager.Get<MouseUpEventSignal>().Listener += OnMouseUp;
         #endregion
 
@@ -432,7 +432,7 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
         SignalManager.Get<AdjustCanvasBankSizeSignal>().Listener -= OnAdjustCanvasBankSize;
         SignalManager.Get<ReloadBankViewImageSignal>().Listener -= OnReloadBankViewImage;
         SignalManager.Get<RemoveSpriteSelectionFromBank>().Listener -= OnRemoveSpriteSelectionFromBank;
-        SignalManager.Get<PreviewMouseMoveSignal>().Listener -= OnPreviewMouseMove;
+        SignalManager.Get<MouseMoveEventSignal>().Listener -= OnMouseMove;
         SignalManager.Get<MouseUpEventSignal>().Listener -= OnMouseUp;
         #endregion
 
@@ -508,6 +508,14 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
 
     private void OnMouseUp(MouseButtonVO vo)
     {
+        if (vo.OriginalSource is FrameworkElement fe)
+        {
+            if (fe.Name != "imgBank")
+            {
+                return;
+            }
+        }
+
         if (!IndividualSelection)
         {
             return;
@@ -525,14 +533,6 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
             return;
         }
 
-        if (vo.OriginalSource is FrameworkElement fe)
-        {
-            if (fe.Name != "imgBank")
-            {
-                return;
-            }
-        }
-
         Image? image = Util.FindAncestor<Image>((DependencyObject)vo.Sender);
 
         if (image == null)
@@ -540,8 +540,13 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
             return;
         }
 
-        SelectArbitrarySizeOfTiles();
+        SelectArbitrarySizeOfTiles(image);
 
+        CleanUpSelectionRect();
+    }
+
+    private void CleanUpSelectionRect()
+    {
         MouseSelectionActive = Visibility.Collapsed;
         MouseSelectionOriginX = 0;
         MouseSelectionOriginY = 0;
@@ -549,7 +554,7 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
         MouseSelectionHeight = 0;
     }
 
-    private void SelectArbitrarySizeOfTiles()
+    private void SelectArbitrarySizeOfTiles(Image? image)
     {
         if (_metaData == null)
         {
@@ -560,6 +565,17 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
         int y = (int)Math.Floor((double)MouseSelectionOriginY / BankUtils.SizeOfCellInPixels) * BankUtils.SizeOfCellInPixels;
         int w = (int)Math.Ceiling((double)MouseSelectionWidth / BankUtils.SizeOfCellInPixels) * BankUtils.SizeOfCellInPixels;
         int h = (int)Math.Ceiling((double)MouseSelectionHeight / BankUtils.SizeOfCellInPixels) * BankUtils.SizeOfCellInPixels;
+
+        if (x == 0 && y == 0 && w == 0 && h == 0)
+        {
+            // select just the single tile
+            Point pos = Mouse.GetPosition(image);
+
+            x = (int)Math.Floor(pos.X / BankUtils.SizeOfCellInPixels) * BankUtils.SizeOfCellInPixels;
+            y = (int)Math.Floor(pos.Y / BankUtils.SizeOfCellInPixels) * BankUtils.SizeOfCellInPixels;
+            w = MapUtils.CellSize;
+            h = MapUtils.CellSize;
+        }
 
         SpriteRectLeft = x;
         SpriteRectTop = y;
@@ -580,7 +596,7 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
         }
     }
 
-    private void OnPreviewMouseMove(MouseEventVO vo)
+    private void OnMouseMove(MouseEventVO vo)
     {
         if (!IndividualSelection)
         {

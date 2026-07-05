@@ -26,6 +26,11 @@ public static class MapUtils
         {
             int index = GetCellIndexFromPoint(new Point(pointX, pointY));
 
+            if (index >= 1024)
+            {
+                break;
+            }
+
             indices.Add(index);
 
             pointX += CellSize;
@@ -36,7 +41,7 @@ public static class MapUtils
                 pointY += CellSize;
             }
 
-            if (pointY > endPointY)
+            if (pointY > endPointY || pointY >= (MapSizeWidth * CellSize))
             {
                 canContinue = false;
             }

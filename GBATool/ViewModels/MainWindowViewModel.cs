@@ -49,7 +49,7 @@ public class MainWindowViewModel : ViewModel
     public CreateElementFromMenuCommand CreateElementFromMenuCommand { get; } = new();
     public PreviewMouseLeftButtonDownCommand PreviewMouseLeftButtonDownCommand { get; } = new();
     public DispatchSignalCommand<MouseLeftButtonUpSignal> PreviewMouseLeftButtonUpCommand { get; } = new();
-    public MouseEventCommand<PreviewMouseMoveSignal> PreviewMouseMoveCommand { get; } = new();
+    public MouseEventCommand<PreviewMouseMoveEventSignal> PreviewMouseMoveCommand { get; } = new();
     public DragEnterCommand DragEnterCommand { get; } = new();
     public DragOverCommand DragOverCommand { get; } = new();
     public DragLeaveCommand DragLeaveCommand { get; } = new();
@@ -135,7 +135,7 @@ public class MainWindowViewModel : ViewModel
         SignalManager.Get<UpdateRecentProjectsSignal>().Listener += OnUpdateRecentProjects;
         SignalManager.Get<MouseLeftButtonDownSignal>().Listener += OnMouseLeftButtonDown;
         SignalManager.Get<MouseLeftButtonUpSignal>().Listener += OnMouseLeftButtonUp;
-        SignalManager.Get<PreviewMouseMoveSignal>().Listener += OnMouseMove;
+        SignalManager.Get<PreviewMouseMoveEventSignal>().Listener += OnMouseMove;
         SignalManager.Get<UpdateAdornersSignal>().Listener += OnUpdateAdorners;
         SignalManager.Get<InitializeAdornersSignal>().Listener += OnInitializeAdorners;
         SignalManager.Get<DetachAdornersSignal>().Listener += OnDetachAdorners;

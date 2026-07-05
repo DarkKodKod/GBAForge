@@ -48,7 +48,7 @@ public class TileSetViewModel : ItemViewModel
 
     #region Commands
     public MouseWheelEventCommand PreviewMouseWheelCommand { get; } = new();
-    public MouseEventCommand<PreviewMouseMoveSignal> PreviewMouseMoveCommand { get; } = new();
+    public MouseEventCommand<PreviewMouseMoveEventSignal> PreviewMouseMoveCommand { get; } = new();
     public MouseEventCommand<MouseLeaveEventSignal> MouseLeaveCommand { get; } = new();
     public MouseButtonEventCommand<MouseUpEventSignal> PreviewMouseUpCommand { get; } = new();
     public BrowseFileCommand BrowseFileCommand { get; } = new();
@@ -457,7 +457,7 @@ public class TileSetViewModel : ItemViewModel
         #region Signals
         SignalManager.Get<BrowseFileSuccessSignal>().Listener += OnBrowseFileSuccess;
         SignalManager.Get<MouseWheelSignal>().Listener += OnMouseWheel;
-        SignalManager.Get<PreviewMouseMoveSignal>().Listener += OnMouseMove;
+        SignalManager.Get<PreviewMouseMoveEventSignal>().Listener += OnMouseMove;
         SignalManager.Get<MouseUpEventSignal>().Listener += OnMouseUpEvent;
         SignalManager.Get<MouseLeaveEventSignal>().Listener += OnMouseLeave;
         SignalManager.Get<UpdateTileSetImageSignal>().Listener += OnUpdateTileSetImage;
@@ -674,7 +674,7 @@ public class TileSetViewModel : ItemViewModel
         #region Signals
         SignalManager.Get<BrowseFileSuccessSignal>().Listener -= OnBrowseFileSuccess;
         SignalManager.Get<MouseWheelSignal>().Listener -= OnMouseWheel;
-        SignalManager.Get<PreviewMouseMoveSignal>().Listener -= OnMouseMove;
+        SignalManager.Get<PreviewMouseMoveEventSignal>().Listener -= OnMouseMove;
         SignalManager.Get<MouseUpEventSignal>().Listener -= OnMouseUpEvent;
         SignalManager.Get<MouseLeaveEventSignal>().Listener -= OnMouseLeave;
         SignalManager.Get<UpdateTileSetImageSignal>().Listener -= OnUpdateTileSetImage;
