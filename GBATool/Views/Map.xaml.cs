@@ -75,16 +75,26 @@ namespace GBATool.Views
             cursorImage.Source = image.Source;
         }
 
-        private void OnTryCaptureMouse()
+        private void OnTryCaptureMouse(string name)
         {
+            if (name != mapCanvas.Name)
+            {
+                return;
+            }
+
             if (!mapCanvas.IsMouseCaptured)
             {
                 mapCanvas.CaptureMouse();
             }
         }
 
-        private void OnTryReleaseMouse()
+        private void OnTryReleaseMouse(string name)
         {
+            if (name != mapCanvas.Name)
+            {
+                return;
+            }
+
             if (mapCanvas.IsMouseCaptured)
             {
                 mapCanvas.ReleaseMouseCapture();

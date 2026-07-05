@@ -410,6 +410,8 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
         SignalManager.Get<RemoveSpriteSelectionFromBank>().Listener += OnRemoveSpriteSelectionFromBank;
         SignalManager.Get<MouseMoveEventSignal>().Listener += OnMouseMove;
         SignalManager.Get<MouseUpEventSignal>().Listener += OnMouseUp;
+        SignalManager.Get<TryCaptureMouseSignal>().Listener += OnTryCaptureMouse;
+        SignalManager.Get<TryReleaseMouseSignal>().Listener += OnTryReleaseMouse;
         #endregion
 
         MouseSelectionActive = Visibility.Collapsed;
@@ -434,6 +436,8 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
         SignalManager.Get<RemoveSpriteSelectionFromBank>().Listener -= OnRemoveSpriteSelectionFromBank;
         SignalManager.Get<MouseMoveEventSignal>().Listener -= OnMouseMove;
         SignalManager.Get<MouseUpEventSignal>().Listener -= OnMouseUp;
+        SignalManager.Get<TryCaptureMouseSignal>().Listener -= OnTryCaptureMouse;
+        SignalManager.Get<TryReleaseMouseSignal>().Listener -= OnTryReleaseMouse;
         #endregion
 
         MouseSelectionActive = Visibility.Collapsed;
@@ -506,14 +510,44 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
         SpriteRectVisibility3 = Visibility.Collapsed;
     }
 
+    private void OnTryCaptureMouse(string name)
+    {
+        if (name != "imgBank")
+        {
+            return;
+        }
+
+        if (!imgBank.IsMouseCaptured)
+        {
+            imgBank.CaptureMouse();
+        }
+    }
+
+    private void OnTryReleaseMouse(string name)
+    {
+        if (name != "imgBank")
+        {
+            return;
+        }
+
+        if (imgBank.IsMouseCaptured)
+        {
+            imgBank.ReleaseMouseCapture();
+        }
+    }
+
     private void OnMouseUp(MouseButtonVO vo)
     {
+        string sourceName = string.Empty;
+
         if (vo.OriginalSource is FrameworkElement fe)
         {
             if (fe.Name != "imgBank")
             {
                 return;
             }
+
+            sourceName = fe.Name;
         }
 
         if (!IndividualSelection)
@@ -532,6 +566,8 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
         {
             return;
         }
+
+        SignalManager.Get<TryReleaseMouseSignal>().Dispatch(sourceName);
 
         Image? image = Util.FindAncestor<Image>((DependencyObject)vo.Sender);
 
@@ -618,12 +654,16 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
             return;
         }
 
+        string sourceName = string.Empty;
+
         if (vo.OriginalSource is FrameworkElement fe)
         {
             if (fe.Name != "imgBank")
             {
                 return;
             }
+
+            sourceName = fe.Name;
         }
 
         Image? image = Util.FindAncestor<Image>((DependencyObject)vo.Sender);
@@ -647,6 +687,8 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
         }
 
         UpdateMouseSelectionArea(pos);
+
+        SignalManager.Get<TryCaptureMouseSignal>().Dispatch(sourceName);
     }
 
     private void UpdateMouseSelectionArea(Point currentPositionInCanvas)

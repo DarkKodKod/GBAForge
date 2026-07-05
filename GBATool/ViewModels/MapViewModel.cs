@@ -1056,12 +1056,16 @@ public class MapViewModel : ItemViewModel
             return;
         }
 
+        string sourceName = string.Empty;
+
         if (vO.OriginalSource is FrameworkElement fe)
         {
             if (fe.Name != "mapCanvas")
             {
                 return;
             }
+
+            sourceName = fe.Name;
         }
 
         Point positionInCanvas = vO.EventArgs.GetPosition(sender);
@@ -1069,14 +1073,14 @@ public class MapViewModel : ItemViewModel
         switch (CurrentMapFunctionality)
         {
             case MapFunctionality.Select:
-                MouseMoveSelection(positionInCanvas);
+                MouseMoveSelection(positionInCanvas, sourceName);
                 break;
             default:
                 break;
         }
     }
 
-    private void MouseMoveSelection(Point currentMousePosition)
+    private void MouseMoveSelection(Point currentMousePosition, string sourceName)
     {
         if (Util.AboutEqual(currentMousePosition.X, _initialMousePositionInCanvas.X) &&
            Util.AboutEqual(currentMousePosition.Y, _initialMousePositionInCanvas.Y))
@@ -1084,19 +1088,23 @@ public class MapViewModel : ItemViewModel
             return;
         }
 
-        SignalManager.Get<TryCaptureMouseSignal>().Dispatch();
+        SignalManager.Get<TryCaptureMouseSignal>().Dispatch(sourceName);
 
         UpdateMouseSelectionArea(currentMousePosition);
     }
 
     private void OnMouseUpEvent(MouseButtonVO vO)
     {
+        string sourceName = string.Empty;
+
         if (vO.OriginalSource is FrameworkElement fe)
         {
             if (fe.Name != "mapCanvas")
             {
                 return;
             }
+
+            sourceName = fe.Name;
         }
 
         if (!_isMovingFromInsideCanvas)
@@ -1114,7 +1122,7 @@ public class MapViewModel : ItemViewModel
             return;
         }
 
-        SignalManager.Get<TryReleaseMouseSignal>().Dispatch();
+        SignalManager.Get<TryReleaseMouseSignal>().Dispatch(sourceName);
 
         List<TileObject> selectedTiles = [];
 
