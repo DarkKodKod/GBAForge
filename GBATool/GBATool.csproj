@@ -101,7 +101,7 @@
     <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.5" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.142" />
     <PackageReference Include="Mono.Unix" Version="7.1.0-final.1.21458.1" />
-    <PackageReference Include="Tomlyn" Version="2.10.0" />
+    <PackageReference Include="Tomlyn" Version="2.10.1" />
     <PackageReference Include="WriteableBitmapEx" Version="1.6.11" />
   </ItemGroup>
 
