@@ -28,6 +28,7 @@
                 <behaviors:EventToCommandBehavior Command="{Binding ImageMouseDownCommand}" Event="MouseDown" PassArguments="True" />
                 <behaviors:EventToCommandBehavior Command="{Binding MouseMoveCommand}" Event="MouseMove" PassArguments="True" />
                 <behaviors:EventToCommandBehavior Command="{Binding MouseUpCommand}" Event="MouseUp" PassArguments="True" />
+                <behaviors:EventToCommandBehavior Command="{Binding MouseDownCommand}" Event="MouseDown" PassArguments="True" />
             </i:Interaction.Behaviors>
             <Canvas.Background>
                 <VisualBrush

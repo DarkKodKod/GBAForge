@@ -73,6 +73,7 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
     public ImageMouseDownCommand ImageMouseDownCommand { get; } = new();
     public MouseEventCommand<MouseMoveEventSignal> MouseMoveCommand { get; } = new();
     public MouseButtonEventCommand<MouseUpEventSignal> MouseUpCommand { get; } = new();
+    public MouseButtonEventCommand<MouseDownEventSignal> MouseDownCommand { get; } = new();
     #endregion
 
     #region get/set
@@ -410,6 +411,7 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
         SignalManager.Get<RemoveSpriteSelectionFromBank>().Listener += OnRemoveSpriteSelectionFromBank;
         SignalManager.Get<MouseMoveEventSignal>().Listener += OnMouseMove;
         SignalManager.Get<MouseUpEventSignal>().Listener += OnMouseUp;
+        SignalManager.Get<MouseDownEventSignal>().Listener += OnMouseDown;
         SignalManager.Get<TryCaptureMouseSignal>().Listener += OnTryCaptureMouse;
         SignalManager.Get<TryReleaseMouseSignal>().Listener += OnTryReleaseMouse;
         #endregion
@@ -436,6 +438,7 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
         SignalManager.Get<RemoveSpriteSelectionFromBank>().Listener -= OnRemoveSpriteSelectionFromBank;
         SignalManager.Get<MouseMoveEventSignal>().Listener -= OnMouseMove;
         SignalManager.Get<MouseUpEventSignal>().Listener -= OnMouseUp;
+        SignalManager.Get<MouseDownEventSignal>().Listener -= OnMouseDown;
         SignalManager.Get<TryCaptureMouseSignal>().Listener -= OnTryCaptureMouse;
         SignalManager.Get<TryReleaseMouseSignal>().Listener -= OnTryReleaseMouse;
         #endregion
@@ -602,7 +605,7 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
         int w = (int)Math.Ceiling((double)MouseSelectionWidth / BankUtils.SizeOfCellInPixels) * BankUtils.SizeOfCellInPixels;
         int h = (int)Math.Ceiling((double)MouseSelectionHeight / BankUtils.SizeOfCellInPixels) * BankUtils.SizeOfCellInPixels;
 
-        if (x == 0 && y == 0 && w == 0 && h == 0)
+        if (w == 0 && h == 0)
         {
             // select just the single tile
             Point pos = Mouse.GetPosition(image);
@@ -629,6 +632,49 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
             };
 
             SignalManager.Get<UseBitmapAsCursorSignal>().Dispatch(imageCtrl);
+        }
+    }
+
+    private void OnMouseDown(MouseButtonVO vo)
+    {
+        if (!IndividualSelection)
+        {
+            return;
+        }
+
+        if (vo.Sender == null)
+        {
+            return;
+        }
+
+        if (vo.OriginalSource is FrameworkElement fe)
+        {
+            if (fe.Name != "imgBank")
+            {
+                return;
+            }
+        }
+
+        vo.MouseEvent.Handled = false;
+
+        Image? image = Util.FindAncestor<Image>((DependencyObject)vo.Sender);
+
+        if (image == null)
+        {
+            return;
+        }
+
+        Point pos = vo.EventArgs.GetPosition(image);
+
+        if (_initialMousePositionInCanvas == null)
+        {
+            _initialMousePositionInCanvas = pos;
+
+            MouseSelectionActive = Visibility.Collapsed;
+            MouseSelectionOriginX = (int)pos.X;
+            MouseSelectionOriginY = (int)pos.Y;
+            MouseSelectionWidth = 0;
+            MouseSelectionHeight = 0;
         }
     }
 
