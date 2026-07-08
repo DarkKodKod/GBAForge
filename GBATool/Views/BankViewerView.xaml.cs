@@ -721,6 +721,15 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
 
         Point pos = vo.EventArgs.GetPosition(image);
 
+        if (pos.X < 0)
+        {
+            pos.X = 0;
+        }
+        if (pos.Y < 0)
+        {
+            pos.Y = 0;
+        }
+
         if (_initialMousePositionInCanvas == null)
         {
             _initialMousePositionInCanvas = pos;
