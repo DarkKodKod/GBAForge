@@ -348,100 +348,43 @@
             </MenuItem>
         </Menu>
         <ToolBarTray DockPanel.Dock="Top">
-            <ToolBar Name="File">
+            <ToolBarTray.Resources>
+                <Style TargetType="Image">
+                    <Setter Property="Width" Value="32"/>
+                    <Setter Property="Height" Value="32"/>
+                    <Setter Property="SnapsToDevicePixels" Value="True"/>
+                    <Setter Property="RenderOptions.BitmapScalingMode" Value="NearestNeighbor"/>
+                    <Style.Triggers>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Effect">
+                                <Setter.Value>
+                                    <fx:GrayscaleEffect />
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Opacity" Value="0.5"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </ToolBarTray.Resources>
+            <ToolBar Name="File" BandIndex="0">
                 <Button ToolTip="New Project" ToolBar.OverflowMode="AsNeeded" Command="{Binding NewProjectCommand}" CommandParameter="{Binding ElementName=MainWindowView}">
-                    <Image Width="16" Height="16" Source="/resources/new_project.png">
-                        <Image.Style>
-                            <Style TargetType="Image">
-                                <Style.Triggers>
-                                    <Trigger Property="IsEnabled" Value="False">
-                                        <Setter Property="Effect">
-                                            <Setter.Value>
-                                                <fx:GrayscaleEffect />
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Setter Property="Opacity" Value="0.5"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Image.Style>
-                    </Image>
+                    <Image Source="/resources/new_project.png"/>
                 </Button>
                 <Button ToolTip="Open Project" ToolBar.OverflowMode="AsNeeded" Command="{Binding OpenProjectCommand}">
-                    <Image Width="16" Height="16" Source="/resources/open_project.png">
-                        <Image.Style>
-                            <Style TargetType="Image">
-                                <Style.Triggers>
-                                    <Trigger Property="IsEnabled" Value="False">
-                                        <Setter Property="Effect">
-                                            <Setter.Value>
-                                                <fx:GrayscaleEffect />
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Setter Property="Opacity" Value="0.5"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Image.Style>
-                    </Image>
+                    <Image Source="/resources/open_project.png"/>
                 </Button>
             </ToolBar>
-            <ToolBar Name="Edit">
+            <ToolBar Name="Edit" BandIndex="1">
                 <Button ToolTip="Undo" ToolBar.OverflowMode="AsNeeded" Command="{Binding UndoCommand}">
-                    <Image Width="16" Height="16" Source="/resources/undo.png">
-                        <Image.Style>
-                            <Style TargetType="Image">
-                                <Style.Triggers>
-                                    <Trigger Property="IsEnabled" Value="False">
-                                        <Setter Property="Effect">
-                                            <Setter.Value>
-                                                <fx:GrayscaleEffect />
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Setter Property="Opacity" Value="0.5"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Image.Style>
-                    </Image>
+                    <Image Source="/resources/undo.png"/>
                 </Button>
                 <Button ToolTip="Redo" ToolBar.OverflowMode="AsNeeded" Command="{Binding RedoCommand}">
-                    <Image Width="16" Height="16" Source="/resources/redo.png">
-                        <Image.Style>
-                            <Style TargetType="Image">
-                                <Style.Triggers>
-                                    <Trigger Property="IsEnabled" Value="False">
-                                        <Setter Property="Effect">
-                                            <Setter.Value>
-                                                <fx:GrayscaleEffect />
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Setter Property="Opacity" Value="0.5"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Image.Style>
-                    </Image>
+                    <Image Source="/resources/redo.png"/>
                 </Button>
             </ToolBar>
-            <ToolBar Name="Project">
+            <ToolBar Name="Project" BandIndex="2">
                 <Button ToolTip="Build Project" ToolBar.OverflowMode="AsNeeded" Command="{Binding OpenBuildProjectCommand}">
-                    <Image Width="16" Height="16" Source="/resources/build.png">
-                        <Image.Style>
-                            <Style TargetType="Image">
-                                <Style.Triggers>
-                                    <Trigger Property="IsEnabled" Value="False">
-                                        <Setter Property="Effect">
-                                            <Setter.Value>
-                                                <fx:GrayscaleEffect />
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Setter Property="Opacity" Value="0.5"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Image.Style>
-                    </Image>
+                    <Image Source="/resources/build.png"/>
                     <Button.CommandParameter>
                         <MultiBinding Converter="{StaticResource parametersConverter}">
                             <Binding ElementName="MainWindowView"/>
@@ -449,6 +392,38 @@
                         </MultiBinding>
                     </Button.CommandParameter>
                 </Button>
+            </ToolBar>
+            <ToolBar Name="tbrMap" BandIndex="3">
+                <ToggleButton ToolTip="Select" ToolBar.OverflowMode="AsNeeded" Name="tbMapSelect">
+                    <i:Interaction.Behaviors>
+                        <behaviors:EventToCommandBehavior Command="{Binding MapSelectToolCommand}" Event="Checked" PassArguments="True" />
+                    </i:Interaction.Behaviors>
+                    <Image Source="/resources/select.png"/>
+                </ToggleButton>
+                <ToggleButton ToolTip="Move" ToolBar.OverflowMode="AsNeeded" Name="tbMapMove">
+                    <i:Interaction.Behaviors>
+                        <behaviors:EventToCommandBehavior Command="{Binding MapSelectToolCommand}" Event="Checked" PassArguments="True" />
+                    </i:Interaction.Behaviors>
+                    <Image Source="/resources/cursorMove.png"/>
+                </ToggleButton>
+                <ToggleButton ToolTip="Paint" ToolBar.OverflowMode="AsNeeded" Name="tbMapPaint">
+                    <i:Interaction.Behaviors>
+                        <behaviors:EventToCommandBehavior Command="{Binding MapPaintToolCommand}" Event="Checked" PassArguments="True" />
+                    </i:Interaction.Behaviors>
+                    <Image Source="/resources/cursorPaint.png"/>
+                </ToggleButton>
+                <ToggleButton ToolTip="Bucket" ToolBar.OverflowMode="AsNeeded" Name="tbMapBucket">
+                    <i:Interaction.Behaviors>
+                        <behaviors:EventToCommandBehavior Command="{Binding MapBucketToolCommand}" Event="Checked" PassArguments="True" />
+                    </i:Interaction.Behaviors>
+                    <Image Source="/resources/cursorBucket.png"/>
+                </ToggleButton>
+                <ToggleButton ToolTip="Erase" ToolBar.OverflowMode="AsNeeded" Name="tbMapErase">
+                    <i:Interaction.Behaviors>
+                        <behaviors:EventToCommandBehavior Command="{Binding MapEraseToolCommand}" Event="Checked" PassArguments="True" />
+                    </i:Interaction.Behaviors>
+                    <Image Source="/resources/erase.png"/>
+                </ToggleButton>
             </ToolBar>
         </ToolBarTray>
         <StatusBar DockPanel.Dock="Bottom">

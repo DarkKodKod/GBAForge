@@ -146,15 +146,6 @@ public class MapViewModel : ItemViewModel
     private MapFunctionality _currentMapFunctionality = MapFunctionality.Select;
     private bool _isMovingFromInsideCanvas;
 
-    public enum MapFunctionality
-    {
-        Select,
-        Move,
-        Paint,
-        BucketPaint,
-        Erase
-    }
-
     public MapModel? GetModel()
     {
         return ProjectItem?.FileHandler?.FileModel is MapModel model ? model : null;
@@ -1260,7 +1251,7 @@ public class MapViewModel : ItemViewModel
     {
         List<TileObject> tiles = [];
 
-        if (MouseSelectionWidth == 0 || 
+        if (MouseSelectionWidth == 0 ||
             MouseSelectionHeight == 0)
         {
             return tiles;
@@ -1281,7 +1272,7 @@ public class MapViewModel : ItemViewModel
             foreach (int cellIndex in tilesInRect)
             {
                 tiles.Add(Tiles0[cellIndex]);
-            }            
+            }
         }
 
         return tiles;

@@ -175,4 +175,9 @@ public class TryCaptureMouseSignal : Signal<string> { }
 public class TryReleaseMouseSignal : Signal<string> { }
 public class ResetSelectionAreaSignal : Signal<Point> { }
 public class SelectTilesSignal : Signal<TileObject[]> { }
+public class MapEraseToolSignal : Signal { }
+public class MapSelectToolSignal : Signal { }
+public class MapPaintToolSignal : Signal { }
+public class MapBucketToolSignal : Signal { }
+public class MapMoveToolSignal : Signal { }
 #endregion

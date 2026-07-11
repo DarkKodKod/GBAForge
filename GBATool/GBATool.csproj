@@ -24,13 +24,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Commands\Map\**" />
-    <EmbeddedResource Remove="Commands\Map\**" />
-    <None Remove="Commands\Map\**" />
-    <Page Remove="Commands\Map\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Remove="icon.ico" />
     <None Remove="Resources\add.png" />
     <None Remove="Resources\build.png" />
@@ -50,7 +43,10 @@
     <None Remove="Resources\cursor8x16.png" />
     <None Remove="Resources\cursor8x32.png" />
     <None Remove="Resources\cursor8x8.png" />
+    <None Remove="Resources\cursorBucket.png" />
     <None Remove="Resources\cursorCustom.png" />
+    <None Remove="Resources\cursorMove.png" />
+    <None Remove="Resources\cursorPaint.png" />
     <None Remove="Resources\cursorPointer.png" />
     <None Remove="Resources\delete.png" />
     <None Remove="Resources\down.png" />
@@ -167,7 +163,16 @@
     <Resource Include="Resources\cursor8x8.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Resources\cursorBucket.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Resources\cursorCustom.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\cursorMove.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\cursorPaint.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Resources\cursorPointer.png">

@@ -71,6 +71,8 @@ namespace GBATool
             SignalManager.Get<ShowLoadingDialogSignal>().Listener += OnShowLoadingDialog;
             SignalManager.Get<FinishedLoadingProjectSignal>().Listener += OnFinishedLoadingProject;
             SignalManager.Get<GotoProjectItemSignal>().Listener += OnGotoProjectItem;
+
+            tbrMap.Visibility = Visibility.Collapsed;
         }
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -179,11 +181,19 @@ namespace GBATool
 
             UserControl? view = null;
 
+            tbrMap.Visibility = Visibility.Collapsed;
+
             switch (item.Type)
             {
                 case ProjectItemType.Bank: view = new Banks(); break;
                 case ProjectItemType.Character: view = new Character(); break;
-                case ProjectItemType.Map: view = new Map(); break;
+                case ProjectItemType.Map:
+                    {
+                        tbrMap.Visibility = Visibility.Visible;
+
+                        view = new Map();
+                    }
+                    break;
                 case ProjectItemType.TileSet: view = new TileSet(); break;
                 case ProjectItemType.Palette: view = new Palette(); break;
                 case ProjectItemType.World: view = new World(); break;
@@ -249,6 +259,8 @@ namespace GBATool
 
         private void OnCloseProjectSuccess()
         {
+            tbrMap.Visibility = Visibility.Collapsed;
+
             CloseWindowsIfThereIsAny();
 
             dpItemPanel.Children.Clear();

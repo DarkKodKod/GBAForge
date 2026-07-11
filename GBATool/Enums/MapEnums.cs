@@ -22,6 +22,15 @@ public enum BckgrAffineSize
     Affine128x128 = 3
 }
 
+public enum MapFunctionality
+{
+    Select,
+    Move,
+    Paint,
+    BucketPaint,
+    Erase
+}
+
 public enum CharacterBaseBlock
 {
     Block0 = 0,

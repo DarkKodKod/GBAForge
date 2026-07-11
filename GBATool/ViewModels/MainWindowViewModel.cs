@@ -60,6 +60,11 @@ public class MainWindowViewModel : ViewModel
     public UndoCommand UndoCommand { get; } = new();
     public RedoCommand RedoCommand { get; } = new();
     public TreeviewSelectedItemChangedCommand TreeviewSelectedItemChangedCommand { get; } = new();
+    public DispatchSignalCommand<MapEraseToolSignal> MapEraseToolCommand { get; } = new();
+    public DispatchSignalCommand<MapSelectToolSignal> MapSelectToolCommand { get; } = new();
+    public DispatchSignalCommand<MapBucketToolSignal> MapBucketToolCommand { get; } = new();
+    public DispatchSignalCommand<MapMoveToolSignal> MapMoveToolCommand { get; } = new();
+    public DispatchSignalCommand<MapPaintToolSignal> MapPaintToolCommand { get; } = new();
     #endregion
 
     private const string _projectNameKey = "applicationTitle";
