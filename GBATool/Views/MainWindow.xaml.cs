@@ -20,36 +20,60 @@ using System.Windows.Media;
 
 namespace GBATool
 {
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-    internal struct MonitorInfoEx
-    {
-        public int cbSize;
-        public Rect rcMonitor;
-        public Rect rcWork;
-        public UInt32 dwFlags;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)] public string szDeviceName;
-    }
-
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
         #region DLL Imports
-        [DllImport("user32.dll")]
-        public static extern bool GetWindowRect(IntPtr hWnd, out Rect lpRect);
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct RECT
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
 
-        [DllImport("User32")]
-        public static extern IntPtr MonitorFromWindow(IntPtr hWnd, int dwFlags);
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        internal unsafe struct MonitorInfoEx
+        {
+            public int cbSize;
+            public RECT rcMonitor;
+            public RECT rcWork;
+            public uint dwFlags;
 
-        [DllImport("user32", EntryPoint = "GetMonitorInfo", CharSet = CharSet.Auto, SetLastError = true)]
-        internal static extern bool GetMonitorInfoEx(IntPtr hMonitor, ref MonitorInfoEx lpmi);
+            public fixed char szDeviceName[32];
+
+            public readonly string DeviceName
+            {
+                get
+                {
+                    fixed (char* ptr = szDeviceName)
+                    {
+                        return new string(ptr);
+                    }
+                }
+            }
+        }
+
+        [LibraryImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static partial bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
+        [LibraryImport("user32.dll")]
+        internal static partial IntPtr MonitorFromWindow(IntPtr hWnd, int dwFlags);
+
+        [LibraryImport("user32.dll", EntryPoint = "GetMonitorInfoW", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static partial bool GetMonitorInfoEx(IntPtr hMonitor, ref MonitorInfoEx lpmi);
         #endregion
 
         private ProjectItemType _currentViewType = ProjectItemType.None;
 
         private LoadingDialog? _loadingDialog = null;
         private readonly FieldInfo? _menuDropAlignmentField;
+        private static MapFunctionality ToolBarMapTool = MapFunctionality.Select;
 
         public MainWindow()
         {
@@ -71,8 +95,136 @@ namespace GBATool
             SignalManager.Get<ShowLoadingDialogSignal>().Listener += OnShowLoadingDialog;
             SignalManager.Get<FinishedLoadingProjectSignal>().Listener += OnFinishedLoadingProject;
             SignalManager.Get<GotoProjectItemSignal>().Listener += OnGotoProjectItem;
+            SignalManager.Get<MapEraseToolSignal>().Listener += OnMapEraseTool;
+            SignalManager.Get<MapSelectToolSignal>().Listener += OnMapSelectTool;
+            SignalManager.Get<MapBucketToolSignal>().Listener += OnMapBucketTool;
+            SignalManager.Get<MapMoveToolSignal>().Listener += OnMapMoveTool;
+            SignalManager.Get<MapPaintToolSignal>().Listener += OnMapPaintTool;
+            SignalManager.Get<UncheckMapBucketToolSignal>().Listener += OnUncheckMapBucketTool;
+            SignalManager.Get<UncheckMapSelectToolSignal>().Listener += OnUncheckMapSelectTool;
+            SignalManager.Get<UncheckMapPaintToolSignal>().Listener += OnUncheckMapPaintTool;
+            SignalManager.Get<UncheckMapMoveToolSignal>().Listener += OnUncheckMapMoveTool;
+            SignalManager.Get<UncheckMapEraseToolSignal>().Listener += OnUncheckMapEraseTool;
 
             tbrMap.Visibility = Visibility.Collapsed;
+        }
+
+        private void OnUncheckMapBucketTool()
+        {
+            if (ToolBarMapTool == MapFunctionality.BucketPaint)
+            {
+                tbMapBucket.IsChecked = true;
+            }
+        }
+
+        private void OnUncheckMapEraseTool()
+        {
+            if (ToolBarMapTool == MapFunctionality.Erase)
+            {
+                tbMapErase.IsChecked = true;
+            }
+        }
+
+        private void OnUncheckMapSelectTool()
+        {
+            if (ToolBarMapTool == MapFunctionality.Select)
+            {
+                tbMapSelect.IsChecked = true;
+            }
+        }
+
+        private void OnUncheckMapPaintTool()
+        {
+            if (ToolBarMapTool == MapFunctionality.Paint)
+            {
+                tbMapPaint.IsChecked = true;
+            }
+        }
+
+        private void OnUncheckMapMoveTool()
+        {
+            if (ToolBarMapTool == MapFunctionality.Move)
+            {
+                tbMapMove.IsChecked = true;
+            }
+        }
+
+        private void OnMapEraseTool()
+        {
+            if (ToolBarMapTool == MapFunctionality.Erase)
+            {
+                return;
+            }
+
+            ToolBarMapTool = MapFunctionality.Erase;
+
+            tbMapErase.IsChecked = true;
+            tbMapBucket.IsChecked = false;
+            tbMapMove.IsChecked = false;
+            tbMapPaint.IsChecked = false;
+            tbMapSelect.IsChecked = false;
+        }
+
+        private void OnMapSelectTool()
+        {
+            if (ToolBarMapTool == MapFunctionality.Select)
+            {
+                return;
+            }
+
+            ToolBarMapTool = MapFunctionality.Select;
+
+            tbMapSelect.IsChecked = true;
+            tbMapBucket.IsChecked = false;
+            tbMapMove.IsChecked = false;
+            tbMapPaint.IsChecked = false;
+            tbMapErase.IsChecked = false;
+        }
+
+        private void OnMapBucketTool()
+        {
+            if (ToolBarMapTool == MapFunctionality.BucketPaint)
+            {
+                return;
+            }
+
+            ToolBarMapTool = MapFunctionality.BucketPaint;
+
+            tbMapErase.IsChecked = false;
+            tbMapMove.IsChecked = false;
+            tbMapPaint.IsChecked = false;
+            tbMapSelect.IsChecked = false;
+        }
+
+        private void OnMapMoveTool()
+        {
+            if (ToolBarMapTool == MapFunctionality.Move)
+            {
+                return;
+            }
+
+            ToolBarMapTool = MapFunctionality.Move;
+
+            tbMapMove.IsChecked = true;
+            tbMapBucket.IsChecked = false;
+            tbMapErase.IsChecked = false;
+            tbMapPaint.IsChecked = false;
+            tbMapSelect.IsChecked = false;
+        }
+
+        private void OnMapPaintTool()
+        {
+            if (ToolBarMapTool == MapFunctionality.Paint)
+            {
+                return;
+            }
+
+            ToolBarMapTool = MapFunctionality.Paint;
+
+            tbMapBucket.IsChecked = false;
+            tbMapMove.IsChecked = false;
+            tbMapErase.IsChecked = false;
+            tbMapSelect.IsChecked = false;
         }
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -86,7 +238,7 @@ namespace GBATool
             mi.cbSize = Marshal.SizeOf(mi);
             GetMonitorInfoEx(MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY), ref mi);
 
-            GetWindowRect(hWnd, out Rect appBounds);
+            GetWindowRect(hWnd, out RECT appBounds);
 
             double windowHeight = appBounds.Right - appBounds.Left;
             double windowWidth = appBounds.Bottom - appBounds.Top;
@@ -190,6 +342,26 @@ namespace GBATool
                 case ProjectItemType.Map:
                     {
                         tbrMap.Visibility = Visibility.Visible;
+
+                        switch (ToolBarMapTool)
+                        {
+                            default:
+                            case MapFunctionality.Select:
+                                tbMapSelect.IsChecked = true;
+                                break;
+                            case MapFunctionality.Move:
+                                tbMapMove.IsChecked = true;
+                                break;
+                            case MapFunctionality.Erase:
+                                tbMapErase.IsChecked = true;
+                                break;
+                            case MapFunctionality.Paint:
+                                tbMapPaint.IsChecked = true;
+                                break;
+                            case MapFunctionality.BucketPaint:
+                                tbMapBucket.IsChecked = true;
+                                break;
+                        }
 
                         view = new Map();
                     }
@@ -344,7 +516,7 @@ namespace GBATool
             mi.cbSize = Marshal.SizeOf(mi);
             GetMonitorInfoEx(MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY), ref mi);
 
-            GetWindowRect(hWnd, out Rect appBounds);
+            GetWindowRect(hWnd, out RECT appBounds);
 
             double windowHeight = appBounds.Right - appBounds.Left;
             double windowWidth = appBounds.Bottom - appBounds.Top;

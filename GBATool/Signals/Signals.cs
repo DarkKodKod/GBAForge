@@ -180,4 +180,9 @@ public class MapSelectToolSignal : Signal { }
 public class MapPaintToolSignal : Signal { }
 public class MapBucketToolSignal : Signal { }
 public class MapMoveToolSignal : Signal { }
+public class UncheckMapBucketToolSignal : Signal { }
+public class UncheckMapSelectToolSignal : Signal { }
+public class UncheckMapEraseToolSignal : Signal { }
+public class UncheckMapPaintToolSignal : Signal { }
+public class UncheckMapMoveToolSignal : Signal { }
 #endregion

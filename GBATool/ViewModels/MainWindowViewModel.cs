@@ -65,6 +65,11 @@ public class MainWindowViewModel : ViewModel
     public DispatchSignalCommand<MapBucketToolSignal> MapBucketToolCommand { get; } = new();
     public DispatchSignalCommand<MapMoveToolSignal> MapMoveToolCommand { get; } = new();
     public DispatchSignalCommand<MapPaintToolSignal> MapPaintToolCommand { get; } = new();
+    public DispatchSignalCommand<UncheckMapBucketToolSignal> MapBucketToolUncheckCommand { get; } = new();
+    public DispatchSignalCommand<UncheckMapSelectToolSignal> MapSelectToolUncheckCommand { get; } = new();
+    public DispatchSignalCommand<UncheckMapPaintToolSignal> MapPaintToolUncheckCommand { get; } = new();
+    public DispatchSignalCommand<UncheckMapEraseToolSignal> MapEraseToolUncheckCommand { get; } = new();
+    public DispatchSignalCommand<UncheckMapMoveToolSignal> MapMoveToolUncheckCommand { get; } = new();
     #endregion
 
     private const string _projectNameKey = "applicationTitle";

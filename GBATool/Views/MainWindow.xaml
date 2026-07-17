@@ -397,30 +397,35 @@
                 <ToggleButton ToolTip="Select" ToolBar.OverflowMode="AsNeeded" Name="tbMapSelect">
                     <i:Interaction.Behaviors>
                         <behaviors:EventToCommandBehavior Command="{Binding MapSelectToolCommand}" Event="Checked" PassArguments="True" />
+                        <behaviors:EventToCommandBehavior Command="{Binding MapSelectToolUncheckCommand}" Event="Unchecked" PassArguments="True" />
                     </i:Interaction.Behaviors>
                     <Image Source="/resources/select.png"/>
                 </ToggleButton>
                 <ToggleButton ToolTip="Move" ToolBar.OverflowMode="AsNeeded" Name="tbMapMove">
                     <i:Interaction.Behaviors>
-                        <behaviors:EventToCommandBehavior Command="{Binding MapSelectToolCommand}" Event="Checked" PassArguments="True" />
+                        <behaviors:EventToCommandBehavior Command="{Binding MapMoveToolCommand}" Event="Checked" PassArguments="True" />
+                        <behaviors:EventToCommandBehavior Command="{Binding MapMoveToolUncheckCommand}" Event="Unchecked" PassArguments="True" />
                     </i:Interaction.Behaviors>
                     <Image Source="/resources/cursorMove.png"/>
                 </ToggleButton>
                 <ToggleButton ToolTip="Paint" ToolBar.OverflowMode="AsNeeded" Name="tbMapPaint">
                     <i:Interaction.Behaviors>
                         <behaviors:EventToCommandBehavior Command="{Binding MapPaintToolCommand}" Event="Checked" PassArguments="True" />
+                        <behaviors:EventToCommandBehavior Command="{Binding MapPaintToolUncheckCommand}" Event="Unchecked" PassArguments="True" />
                     </i:Interaction.Behaviors>
                     <Image Source="/resources/cursorPaint.png"/>
                 </ToggleButton>
                 <ToggleButton ToolTip="Bucket" ToolBar.OverflowMode="AsNeeded" Name="tbMapBucket">
                     <i:Interaction.Behaviors>
                         <behaviors:EventToCommandBehavior Command="{Binding MapBucketToolCommand}" Event="Checked" PassArguments="True" />
+                        <behaviors:EventToCommandBehavior Command="{Binding MapBucketToolUncheckCommand}" Event="Unchecked" PassArguments="True" />
                     </i:Interaction.Behaviors>
                     <Image Source="/resources/cursorBucket.png"/>
                 </ToggleButton>
                 <ToggleButton ToolTip="Erase" ToolBar.OverflowMode="AsNeeded" Name="tbMapErase">
                     <i:Interaction.Behaviors>
                         <behaviors:EventToCommandBehavior Command="{Binding MapEraseToolCommand}" Event="Checked" PassArguments="True" />
+                        <behaviors:EventToCommandBehavior Command="{Binding MapEraseToolUncheckCommand}" Event="Unchecked" PassArguments="True" />
                     </i:Interaction.Behaviors>
                     <Image Source="/resources/erase.png"/>
                 </ToggleButton>
