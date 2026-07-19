@@ -174,14 +174,19 @@ public class TryCaptureMouseSignal : Signal<string> { }
 public class TryReleaseMouseSignal : Signal<string> { }
 public class ResetSelectionAreaSignal : Signal<Point> { }
 public class SelectTilesSignal : Signal<TileObject[]> { }
-public class MapEraseToolSignal : Signal { }
-public class MapSelectToolSignal : Signal { }
-public class MapPaintToolSignal : Signal { }
-public class MapBucketToolSignal : Signal { }
-public class MapMoveToolSignal : Signal { }
+public class ClickOnMapEraseToolSignal : Signal { }
+public class ClickOnMapSelectToolSignal : Signal { }
+public class ClickOnMapPaintToolSignal : Signal { }
+public class ClickOnMapBucketToolSignal : Signal { }
+public class ClickOnMapMoveToolSignal : Signal { }
 public class UncheckMapBucketToolSignal : Signal { }
 public class UncheckMapSelectToolSignal : Signal { }
 public class UncheckMapEraseToolSignal : Signal { }
 public class UncheckMapPaintToolSignal : Signal { }
 public class UncheckMapMoveToolSignal : Signal { }
+public class CheckMapBucketToolSignal : Signal { }
+public class CheckMapSelectToolSignal : Signal { }
+public class CheckMapEraseToolSignal : Signal { }
+public class CheckMapPaintToolSignal : Signal { }
+public class CheckMapMoveToolSignal : Signal { }
 #endregion

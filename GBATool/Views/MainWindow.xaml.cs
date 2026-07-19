@@ -95,18 +95,48 @@ namespace GBATool
             SignalManager.Get<ShowLoadingDialogSignal>().Listener += OnShowLoadingDialog;
             SignalManager.Get<FinishedLoadingProjectSignal>().Listener += OnFinishedLoadingProject;
             SignalManager.Get<GotoProjectItemSignal>().Listener += OnGotoProjectItem;
-            SignalManager.Get<MapEraseToolSignal>().Listener += OnMapEraseTool;
-            SignalManager.Get<MapSelectToolSignal>().Listener += OnMapSelectTool;
-            SignalManager.Get<MapBucketToolSignal>().Listener += OnMapBucketTool;
-            SignalManager.Get<MapMoveToolSignal>().Listener += OnMapMoveTool;
-            SignalManager.Get<MapPaintToolSignal>().Listener += OnMapPaintTool;
+            SignalManager.Get<ClickOnMapEraseToolSignal>().Listener += OnMapEraseTool;
+            SignalManager.Get<ClickOnMapSelectToolSignal>().Listener += OnMapSelectTool;
+            SignalManager.Get<ClickOnMapBucketToolSignal>().Listener += OnMapBucketTool;
+            SignalManager.Get<ClickOnMapMoveToolSignal>().Listener += OnMapMoveTool;
+            SignalManager.Get<ClickOnMapPaintToolSignal>().Listener += OnMapPaintTool;
             SignalManager.Get<UncheckMapBucketToolSignal>().Listener += OnUncheckMapBucketTool;
             SignalManager.Get<UncheckMapSelectToolSignal>().Listener += OnUncheckMapSelectTool;
             SignalManager.Get<UncheckMapPaintToolSignal>().Listener += OnUncheckMapPaintTool;
             SignalManager.Get<UncheckMapMoveToolSignal>().Listener += OnUncheckMapMoveTool;
             SignalManager.Get<UncheckMapEraseToolSignal>().Listener += OnUncheckMapEraseTool;
+            SignalManager.Get<CheckMapBucketToolSignal>().Listener += OnCheckMapBucketTool;
+            SignalManager.Get<CheckMapSelectToolSignal>().Listener += OnCheckMapSelectTool;
+            SignalManager.Get<CheckMapEraseToolSignal>().Listener += OnCheckMapEraseTool;
+            SignalManager.Get<CheckMapPaintToolSignal>().Listener += OnCheckMapPaintTool;
+            SignalManager.Get<CheckMapMoveToolSignal>().Listener += OnCheckMapMoveTool;
 
             tbrMap.Visibility = Visibility.Collapsed;
+        }
+
+        private void OnCheckMapBucketTool()
+        {
+            tbMapBucket.IsChecked = true;
+        }
+
+        private void OnCheckMapSelectTool()
+        {
+            tbMapSelect.IsChecked = true;
+        }
+
+        private void OnCheckMapEraseTool()
+        {
+            tbMapErase.IsChecked = true;
+        }
+
+        private void OnCheckMapPaintTool()
+        {
+            tbMapPaint.IsChecked = true;
+        }
+
+        private void OnCheckMapMoveTool()
+        {
+            tbMapMove.IsChecked = true;
         }
 
         private void OnUncheckMapBucketTool()

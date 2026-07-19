@@ -54,6 +54,7 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
     private int _mouseSelectionWidth;
     private int _mouseSelectionHeight;
     private Point? _initialMousePositionInCanvas = null;
+    private static MapFunctionality ToolBarMapTool = MapFunctionality.Select;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -414,6 +415,11 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
         SignalManager.Get<MouseDownEventSignal>().Listener += OnMouseDown;
         SignalManager.Get<TryCaptureMouseSignal>().Listener += OnTryCaptureMouse;
         SignalManager.Get<TryReleaseMouseSignal>().Listener += OnTryReleaseMouse;
+        SignalManager.Get<ClickOnMapEraseToolSignal>().Listener += OnMapEraseTool;
+        SignalManager.Get<ClickOnMapSelectToolSignal>().Listener += OnMapSelectTool;
+        SignalManager.Get<ClickOnMapBucketToolSignal>().Listener += OnMapBucketTool;
+        SignalManager.Get<ClickOnMapMoveToolSignal>().Listener += OnMapMoveTool;
+        SignalManager.Get<ClickOnMapPaintToolSignal>().Listener += OnMapPaintTool;
         #endregion
 
         MouseSelectionActive = Visibility.Collapsed;
@@ -441,6 +447,11 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
         SignalManager.Get<MouseDownEventSignal>().Listener -= OnMouseDown;
         SignalManager.Get<TryCaptureMouseSignal>().Listener -= OnTryCaptureMouse;
         SignalManager.Get<TryReleaseMouseSignal>().Listener -= OnTryReleaseMouse;
+        SignalManager.Get<ClickOnMapEraseToolSignal>().Listener -= OnMapEraseTool;
+        SignalManager.Get<ClickOnMapSelectToolSignal>().Listener -= OnMapSelectTool;
+        SignalManager.Get<ClickOnMapBucketToolSignal>().Listener -= OnMapBucketTool;
+        SignalManager.Get<ClickOnMapMoveToolSignal>().Listener -= OnMapMoveTool;
+        SignalManager.Get<ClickOnMapPaintToolSignal>().Listener -= OnMapPaintTool;
         #endregion
 
         MouseSelectionActive = Visibility.Collapsed;
@@ -632,6 +643,12 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
             };
 
             SignalManager.Get<UseBitmapAsCursorSignal>().Dispatch(imageCtrl);
+
+            if (ToolBarMapTool == MapFunctionality.Select)
+            {
+                // Once a cropped image is selected, the paint tool is automatically chosen
+                SignalManager.Get<CheckMapPaintToolSignal>().Dispatch();
+            }
         }
     }
 
@@ -1134,5 +1151,30 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
                 SignalManager.Get<TryCreatePaletteElementSignal>().Dispatch(name, colorArray);
             }
         }
+    }
+
+    private void OnMapEraseTool()
+    {
+        ToolBarMapTool = MapFunctionality.Erase;
+    }
+
+    private void OnMapSelectTool()
+    {
+        ToolBarMapTool = MapFunctionality.Select;
+    }
+
+    private void OnMapBucketTool()
+    {
+        ToolBarMapTool = MapFunctionality.BucketPaint;
+    }
+
+    private void OnMapMoveTool()
+    {
+        ToolBarMapTool = MapFunctionality.Move;
+    }
+
+    private void OnMapPaintTool()
+    {
+        ToolBarMapTool = MapFunctionality.Paint;
     }
 }

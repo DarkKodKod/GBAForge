@@ -60,11 +60,11 @@ public class MainWindowViewModel : ViewModel
     public UndoCommand UndoCommand { get; } = new();
     public RedoCommand RedoCommand { get; } = new();
     public TreeviewSelectedItemChangedCommand TreeviewSelectedItemChangedCommand { get; } = new();
-    public DispatchSignalCommand<MapEraseToolSignal> MapEraseToolCommand { get; } = new();
-    public DispatchSignalCommand<MapSelectToolSignal> MapSelectToolCommand { get; } = new();
-    public DispatchSignalCommand<MapBucketToolSignal> MapBucketToolCommand { get; } = new();
-    public DispatchSignalCommand<MapMoveToolSignal> MapMoveToolCommand { get; } = new();
-    public DispatchSignalCommand<MapPaintToolSignal> MapPaintToolCommand { get; } = new();
+    public DispatchSignalCommand<ClickOnMapEraseToolSignal> MapEraseToolCommand { get; } = new();
+    public DispatchSignalCommand<ClickOnMapSelectToolSignal> MapSelectToolCommand { get; } = new();
+    public DispatchSignalCommand<ClickOnMapBucketToolSignal> MapBucketToolCommand { get; } = new();
+    public DispatchSignalCommand<ClickOnMapMoveToolSignal> MapMoveToolCommand { get; } = new();
+    public DispatchSignalCommand<ClickOnMapPaintToolSignal> MapPaintToolCommand { get; } = new();
     public DispatchSignalCommand<UncheckMapBucketToolSignal> MapBucketToolUncheckCommand { get; } = new();
     public DispatchSignalCommand<UncheckMapSelectToolSignal> MapSelectToolUncheckCommand { get; } = new();
     public DispatchSignalCommand<UncheckMapPaintToolSignal> MapPaintToolUncheckCommand { get; } = new();
