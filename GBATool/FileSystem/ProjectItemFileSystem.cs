@@ -3,20 +3,15 @@ using GBATool.Models;
 using GBATool.Signals;
 using GBATool.Utils;
 using GBATool.ViewModels;
-using System;
 using System.IO;
-using System.Threading;
 using Tomlyn;
 
 namespace GBATool.FileSystem;
 
 public static class ProjectItemFileSystem
 {
-    private static long _objectsLoading = 0;
-
     public static void Initialize()
     {
-        SignalManager.Get<RegisterFileHandlerSignal>().Listener += OnRegisterFileHandler;
         SignalManager.Get<RenameFileSignal>().Listener += OnRenameFile;
         SignalManager.Get<MoveElementSignal>().Listener += OnMoveElement;
     }
@@ -65,80 +60,6 @@ public static class ProjectItemFileSystem
         }
 
         fileHandler.Name = item.DisplayName;
-    }
-
-    private static long ReadCount()
-    {
-        return Interlocked.Read(ref _objectsLoading);
-    }
-
-    private static void IncrementCount()
-    {
-        Interlocked.Increment(ref _objectsLoading);
-    }
-
-    private static void DecrementCount()
-    {
-        Interlocked.Decrement(ref _objectsLoading);
-    }
-
-    public static bool IsLoading()
-    {
-        return ReadCount() > 0;
-    }
-
-    private static async void OnRegisterFileHandler(ProjectItem item, string? path)
-    {
-        IncrementCount();
-
-        FileHandler fileHandler = new() { Name = item.DisplayName, Path = path ?? string.Empty };
-
-        item.FileHandler = fileHandler;
-
-        if (item.IsFolder)
-        {
-            goto end_of_function;
-        }
-
-        string itemPath = Path.Combine(fileHandler.Path, fileHandler.Name + Util.GetExtensionByType(item.Type));
-
-        if (!File.Exists(itemPath))
-        {
-            goto end_of_function;
-        }
-
-        fileHandler.FileModel = await FileUtils.ReadFileAndLoadModelAsync(itemPath, item.Type).ConfigureAwait(false);
-
-        if (string.IsNullOrEmpty(fileHandler.FileModel?.GUID))
-        {
-            if (fileHandler.FileModel != null)
-            {
-                fileHandler.FileModel.GUID = Guid.NewGuid().ToString();
-            }
-        }
-
-        if (fileHandler.FileModel == null)
-        {
-            goto end_of_function;
-        }
-
-        if (ProjectFiles.Handlers.ContainsKey(fileHandler.FileModel.GUID))
-        {
-            goto end_of_function;
-        }
-
-        _ = ProjectFiles.Handlers.TryAdd(fileHandler.FileModel.GUID, fileHandler);
-
-        SignalManager.Get<ProjectItemLoadedSignal>().Dispatch(fileHandler.FileModel.GUID);
-
-        end_of_function:
-
-        DecrementCount();
-
-        if (ReadCount() == 0)
-        {
-            SignalManager.Get<FinishedLoadingProjectSignal>().Dispatch();
-        }
     }
 
     public static string GetValidFolderName(string path, string name)

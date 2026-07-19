@@ -60,7 +60,6 @@ public class GotoProjectItemSignal : Signal<string> { }
 #endregion
 
 #region File system
-public class RegisterFileHandlerSignal : Signal<ProjectItem, string?> { }
 public class RenameFileSignal : Signal<ProjectItem> { }
 #endregion
 

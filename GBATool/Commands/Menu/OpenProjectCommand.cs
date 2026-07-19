@@ -8,8 +8,10 @@ using GBATool.Signals;
 using GBATool.Utils;
 using GBATool.ViewModels;
 using GBATool.VOs;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -33,6 +35,8 @@ public class OpenProjectCommand : Command
     private readonly string _folderMaps;
     //private readonly string _folderWorlds;
     //private readonly string _folderEntities;
+
+    private readonly List<Task> _loadingTasks = [];
 
     public OpenProjectCommand()
     {
@@ -69,7 +73,7 @@ public class OpenProjectCommand : Command
         return false;
     }
 
-    public override void Execute(object? parameter)
+    public override async Task ExecuteAsync(object? parameter)
     {
         string? path = parameter as string;
 
@@ -87,7 +91,7 @@ public class OpenProjectCommand : Command
                 int startIndex = path.LastIndexOf(Path.DirectorySeparatorChar);
                 string projectName = path.Substring(startIndex + 1, path.Length - startIndex - 1);
 
-                LoadProject(path, fullPath, projectName);
+                await LoadProject(path, fullPath, projectName);
             }
         }
         else
@@ -112,7 +116,7 @@ public class OpenProjectCommand : Command
         }
     }
 
-    private void LoadProject(string directoryPath, string projectFullPath, string projectName)
+    private async Task LoadProject(string directoryPath, string projectFullPath, string projectName)
     {
         // Clean up previous stuff
         ProjectFiles.Handlers.Clear();
@@ -136,14 +140,18 @@ public class OpenProjectCommand : Command
 
         List<ProjectItem> projectItems = [];
 
-        ScanDirectories(directories, ref projectItems);
+        await ScanDirectories(directories, projectItems);
+
+        await Task.WhenAll(_loadingTasks);
+
+        SignalManager.Get<FinishedLoadingProjectSignal>().Dispatch();
 
         SignalManager.Get<OpenProjectSuccessSignal>().Dispatch(new ProjectOpenVO() { Items = projectItems, ProjectName = projectName });
 
         UpdateConfigurations(directoryPath);
     }
 
-    private void ScanDirectories(DirectoryInfo[] directories, ref List<ProjectItem> projectItems, ProjectItem? parent = null, string extension = "")
+    private async Task ScanDirectories(DirectoryInfo[] directories, List<ProjectItem> projectItems, ProjectItem? parent = null, string extension = "")
     {
         foreach (DirectoryInfo directory in directories)
         {
@@ -188,7 +196,8 @@ public class OpenProjectCommand : Command
 
             DirectoryInfo? parentFolder = Directory.GetParent(directory.FullName);
 
-            SignalManager.Get<RegisterFileHandlerSignal>().Dispatch(item, parentFolder?.FullName);
+            Task task = LoadObject(item, parentFolder?.FullName);
+            _loadingTasks.Add(task);
 
             // Check if it was some folders inside
             DirectoryInfo[] subFolders = directory.GetDirectories();
@@ -196,7 +205,7 @@ public class OpenProjectCommand : Command
             {
                 List<ProjectItem> subItems = [];
 
-                ScanDirectories(subFolders, ref subItems, item, ext);
+                await ScanDirectories(subFolders, subItems, item, ext);
 
                 foreach (ProjectItem element in subItems)
                 {
@@ -221,11 +230,55 @@ public class OpenProjectCommand : Command
 
                 item.Items.Add(fileItem);
 
-                SignalManager.Get<RegisterFileHandlerSignal>().Dispatch(fileItem, file.DirectoryName);
+                Task childTask = LoadObject(fileItem, file.DirectoryName);
+                _loadingTasks.Add(childTask);
             }
 
             projectItems.Add(item);
         }
+    }
+
+    private static async Task LoadObject(ProjectItem item, string? path)
+    {
+        FileHandler fileHandler = new() { Name = item.DisplayName, Path = path ?? string.Empty };
+
+        item.FileHandler = fileHandler;
+
+        if (item.IsFolder)
+        {
+            return;
+        }
+
+        string itemPath = Path.Combine(fileHandler.Path, fileHandler.Name + Util.GetExtensionByType(item.Type));
+
+        if (!File.Exists(itemPath))
+        {
+            return;
+        }
+
+        fileHandler.FileModel = await FileUtils.ReadFileAndLoadModelAsync(itemPath, item.Type).ConfigureAwait(false);
+
+        if (string.IsNullOrEmpty(fileHandler.FileModel?.GUID))
+        {
+            if (fileHandler.FileModel != null)
+            {
+                fileHandler.FileModel.GUID = Guid.NewGuid().ToString();
+            }
+        }
+
+        if (fileHandler.FileModel == null)
+        {
+            return;
+        }
+
+        if (ProjectFiles.Handlers.ContainsKey(fileHandler.FileModel.GUID))
+        {
+            return;
+        }
+
+        _ = ProjectFiles.Handlers.TryAdd(fileHandler.FileModel.GUID, fileHandler);
+
+        SignalManager.Get<ProjectItemLoadedSignal>().Dispatch(fileHandler.FileModel.GUID);
     }
 
     private static void UpdateConfigurations(string projectFullPath)

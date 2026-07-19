@@ -1,5 +1,4 @@
 ﻿using ArchitectureLibrary.Commands;
-using GBATool.FileSystem;
 using GBATool.Views;
 using System.Windows;
 
@@ -9,11 +8,6 @@ public class OpenBuildProjectCommand : Command
 {
     public override bool CanExecute(object? parameter)
     {
-        if (ProjectItemFileSystem.IsLoading())
-        {
-            return false;
-        }
-
         if (parameter == null)
         {
             return false;
