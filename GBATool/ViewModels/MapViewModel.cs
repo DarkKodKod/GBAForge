@@ -665,6 +665,11 @@ public class MapViewModel : ItemViewModel
         SignalManager.Get<ChangeMapPaletteSignal>().Listener += OnChangeMapPalette;
         SignalManager.Get<ResetSelectionAreaSignal>().Listener += OnResetSelectionArea;
         SignalManager.Get<SelectTilesSignal>().Listener += OnSelectTiles;
+        SignalManager.Get<CheckMapBucketToolSignal>().Listener += OnCheckMapBucketTool;
+        SignalManager.Get<CheckMapSelectToolSignal>().Listener += OnCheckMapSelectTool;
+        SignalManager.Get<CheckMapEraseToolSignal>().Listener += OnCheckMapEraseTool;
+        SignalManager.Get<CheckMapPaintToolSignal>().Listener += OnCheckMapPaintTool;
+        SignalManager.Get<CheckMapMoveToolSignal>().Listener += OnCheckMapMoveTool;
         #endregion
 
         MapModel? model = GetModel();
@@ -794,9 +799,39 @@ public class MapViewModel : ItemViewModel
         SignalManager.Get<ChangeMapPaletteSignal>().Listener -= OnChangeMapPalette;
         SignalManager.Get<ResetSelectionAreaSignal>().Listener -= OnResetSelectionArea;
         SignalManager.Get<SelectTilesSignal>().Listener -= OnSelectTiles;
+        SignalManager.Get<CheckMapBucketToolSignal>().Listener -= OnCheckMapBucketTool;
+        SignalManager.Get<CheckMapSelectToolSignal>().Listener -= OnCheckMapSelectTool;
+        SignalManager.Get<CheckMapEraseToolSignal>().Listener -= OnCheckMapEraseTool;
+        SignalManager.Get<CheckMapPaintToolSignal>().Listener -= OnCheckMapPaintTool;
+        SignalManager.Get<CheckMapMoveToolSignal>().Listener -= OnCheckMapMoveTool;
         #endregion
 
         base.OnDeactivate();
+    }
+
+    private void OnCheckMapBucketTool()
+    {
+        CurrentMapFunctionality = MapFunctionality.BucketPaint;
+    }
+
+    private void OnCheckMapSelectTool()
+    {
+        CurrentMapFunctionality = MapFunctionality.Select;
+    }
+
+    private void OnCheckMapEraseTool()
+    {
+        CurrentMapFunctionality = MapFunctionality.Erase;
+    }
+
+    private void OnCheckMapPaintTool()
+    {
+        CurrentMapFunctionality = MapFunctionality.Paint;
+    }
+
+    private void OnCheckMapMoveTool()
+    {
+        CurrentMapFunctionality = MapFunctionality.Move;
     }
 
     private void OnResetSelectionArea(Point position)
@@ -1063,10 +1098,14 @@ public class MapViewModel : ItemViewModel
 
         switch (CurrentMapFunctionality)
         {
+            default:
+            case MapFunctionality.Paint:
             case MapFunctionality.Select:
+            case MapFunctionality.BucketPaint:
+            case MapFunctionality.Erase:
                 MouseMoveSelection(positionInCanvas, sourceName);
                 break;
-            default:
+            case MapFunctionality.Move:
                 break;
         }
     }
@@ -1115,13 +1154,6 @@ public class MapViewModel : ItemViewModel
 
         SignalManager.Get<TryReleaseMouseSignal>().Dispatch(sourceName);
 
-        List<TileObject> selectedTiles = [];
-
-        if (MouseSelectionActive == Visibility.Visible)
-        {
-            selectedTiles = CheckMouseAreaSelected();
-        }
-
         Point pos = vO.MouseEvent.GetPosition(sender);
 
         if (pos.X < 0)
@@ -1133,17 +1165,53 @@ public class MapViewModel : ItemViewModel
             pos.Y = 0;
         }
 
-        SignalManager.Get<ResetSelectionAreaSignal>().Dispatch(pos);
+        List<TileObject> selectedTiles;
 
-        if (selectedTiles.Count == 0 &&
-            pos.X >= 0 && pos.Y >= 0)
+        if (MouseSelectionActive == Visibility.Visible)
         {
-            GetSelectedTile(pos, ref selectedTiles);
+            selectedTiles = CheckMouseAreaSelected();
+        }
+        else
+        {
+            selectedTiles = GetSelectedTile(pos);
         }
 
-        SignalManager.Get<SelectTilesSignal>().Dispatch([.. selectedTiles]);
+        switch (CurrentMapFunctionality)
+        {
+            default:
+            case MapFunctionality.Select:
+                SelectTiles(pos, selectedTiles);
+                break;
+            case MapFunctionality.Move:
+                break;
+            case MapFunctionality.Paint:
+                PaintTiles(pos, selectedTiles);
+                break;
+            case MapFunctionality.BucketPaint:
+                break;
+            case MapFunctionality.Erase:
+                break;
+        }
 
         _isMovingFromInsideCanvas = false;
+    }
+
+    private void PaintTiles(Point pos, List<TileObject> selectedTiles)
+    {
+        SignalManager.Get<ResetSelectionAreaSignal>().Dispatch(pos);
+
+        MapModel? model = GetModel();
+
+        if (model == null)
+        {
+            return;
+        }
+    }
+
+    private void SelectTiles(Point pos, List<TileObject> selectedTiles)
+    {
+        SignalManager.Get<ResetSelectionAreaSignal>().Dispatch(pos);
+        SignalManager.Get<SelectTilesSignal>().Dispatch([.. selectedTiles]);
     }
 
     private void OnMouseDownEvent(MouseButtonVO vO)
@@ -1237,14 +1305,11 @@ public class MapViewModel : ItemViewModel
         }
     }
 
-    private void GetSelectedTile(Point position, ref List<TileObject> selectedTiles)
+    private List<TileObject> GetSelectedTile(Point position)
     {
         int cellIndex = MapUtils.GetCellIndexFromPoint(position);
 
-        if (!selectedTiles.Contains(Tiles0[cellIndex]))
-        {
-            selectedTiles.Add(Tiles0[cellIndex]);
-        }
+        return [Tiles0[cellIndex]];
     }
 
     private List<TileObject> CheckMouseAreaSelected()

@@ -26,6 +26,12 @@ public class Rectangle<T> where T : struct, INumber<T>
 
     public static bool operator ==(Rectangle<T> r1, Rectangle<T> r2)
     {
+        if (ReferenceEquals(r1, r2)) 
+            return true;
+        
+        if (r1 is null || r2 is null) 
+            return false;
+
         return r1.X == r2.X &&
                r1.Y == r2.Y &&
                r1.Width == r2.Width &&
@@ -39,11 +45,15 @@ public class Rectangle<T> where T : struct, INumber<T>
 
     public static Rectangle<T> operator +(Rectangle<T> r, (T numX, T numY) shift)
     {
+        ArgumentNullException.ThrowIfNull(r);
+
         return new Rectangle<T>(r.X + shift.numX, r.Y + shift.numY, r.Width, r.Height);
     }
 
     public static Rectangle<T> operator *(Rectangle<T> r, T scale)
     {
+        ArgumentNullException.ThrowIfNull(r);
+
         return new Rectangle<T>(r.X, r.Y, r.Width * scale, r.Height * scale);
     }
 
