@@ -1,4 +1,5 @@
-﻿using GBATool.Enums;
+﻿using ArchitectureLibrary.Utils;
+using GBATool.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,35 +10,23 @@ namespace GBATool.Models;
 
 public class Tile
 {
-    public Tile()
-    {
-        FlipHorizontal = false;
-        FlipVertical = false;
-        PaletteIndex = 0;
-        SpriteTileID = string.Empty;
-        TileSetID = string.Empty;
-        MapID = string.Empty;
-        MapIndex = 0;
-    }
-
     public bool FlipHorizontal { get; set; }
     public bool FlipVertical { get; set; }
     public byte PaletteIndex { get; set; }
-    public string SpriteTileID { get; set; }
-    public string TileSetID { get; set; }
-    public string MapID { get; set; }
-    public int MapIndex { get; set; }
+    public Rectangle<int> TileSetRect { get; set; } = Rectangle<int>.Empty;
+    public string TileSetID { get; set; } = string.Empty;
+    public string MapID { get; init; } = string.Empty;
+    public int CellIndex { get; init; }
 
     public bool IsEmpty()
     {
-        return string.IsNullOrEmpty(SpriteTileID) || string.IsNullOrEmpty(TileSetID);
+        return TileSetRect == Rectangle<int>.Empty || string.IsNullOrEmpty(TileSetID);
     }
 
     public void Clean()
     {
-        SpriteTileID = string.Empty;
+        TileSetRect = Rectangle<int>.Empty;
         TileSetID = string.Empty;
-        MapID = string.Empty;
     }
 }
 
@@ -89,10 +78,28 @@ public class MapModel : AFileModel
 
             for (int j = 0; j < RegularTileMin; j++)
             {
-                tiles.Add(new Tile() { MapID = mapID, MapIndex = i });
+                tiles.Add(new Tile() { MapID = mapID, CellIndex = j });
             }
 
             Tiles.Add(mapID, [.. tiles]);
         }
+    }
+
+    public List<Tile> GetTilesFromRegularBackground(List<(string, int)> indices)
+    {
+        List<Tile> listOfTiles = [];
+
+        foreach ((string mapID, int index) in indices)
+        {
+            if (Tiles.TryGetValue(mapID, out Tile[]? tiles))
+            {
+                if (tiles != null && index >= 0 && index < RegularTileMin)
+                {
+                    listOfTiles.Add(tiles[index]);
+                }
+            }
+        }
+
+        return listOfTiles;
     }
 }

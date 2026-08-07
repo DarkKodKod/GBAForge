@@ -1,4 +1,5 @@
 ﻿using ArchitectureLibrary.Signals;
+using ArchitectureLibrary.Utils;
 using GBATool.Commands.Banks;
 using GBATool.Commands.Input;
 using GBATool.Enums;
@@ -15,6 +16,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
 namespace GBATool.ViewModels;
@@ -159,6 +161,12 @@ public class MapViewModel : ItemViewModel
     #endregion
 
     #region get/set
+    public string CurrentCursor
+    {
+        get;
+        set;
+    } = string.Empty;
+
     public TileObject? SelectedTile
     {
         get => _selectedTile;
@@ -670,6 +678,7 @@ public class MapViewModel : ItemViewModel
         SignalManager.Get<CheckMapEraseToolSignal>().Listener += OnCheckMapEraseTool;
         SignalManager.Get<CheckMapPaintToolSignal>().Listener += OnCheckMapPaintTool;
         SignalManager.Get<CheckMapMoveToolSignal>().Listener += OnCheckMapMoveTool;
+        SignalManager.Get<UseBitmapAsCursorSignal>().Listener += OnUseBitmapAsCursor;
         #endregion
 
         MapModel? model = GetModel();
@@ -707,7 +716,7 @@ public class MapViewModel : ItemViewModel
                             {
                                 Index = tileIndex++,
                                 MapID = map.Key,
-                                MapIndex = item.MapIndex
+                                MapIndex = item.CellIndex
                             });
                         }
                     }
@@ -721,7 +730,7 @@ public class MapViewModel : ItemViewModel
                             {
                                 Index = tileIndex++,
                                 MapID = map.Key,
-                                MapIndex = item.MapIndex
+                                MapIndex = item.CellIndex
                             });
                         }
                     }
@@ -735,7 +744,7 @@ public class MapViewModel : ItemViewModel
                             {
                                 Index = tileIndex++,
                                 MapID = map.Key,
-                                MapIndex = item.MapIndex
+                                MapIndex = item.CellIndex
                             });
                         }
                     }
@@ -749,7 +758,7 @@ public class MapViewModel : ItemViewModel
                             {
                                 Index = tileIndex++,
                                 MapID = map.Key,
-                                MapIndex = item.MapIndex
+                                MapIndex = item.CellIndex
                             });
                         }
                     }
@@ -804,6 +813,7 @@ public class MapViewModel : ItemViewModel
         SignalManager.Get<CheckMapEraseToolSignal>().Listener -= OnCheckMapEraseTool;
         SignalManager.Get<CheckMapPaintToolSignal>().Listener -= OnCheckMapPaintTool;
         SignalManager.Get<CheckMapMoveToolSignal>().Listener -= OnCheckMapMoveTool;
+        SignalManager.Get<UseBitmapAsCursorSignal>().Listener -= OnUseBitmapAsCursor;
         #endregion
 
         base.OnDeactivate();
@@ -1196,16 +1206,73 @@ public class MapViewModel : ItemViewModel
         _isMovingFromInsideCanvas = false;
     }
 
+    private void OnUseBitmapAsCursor(Image image, string tilesetID)
+    {
+        CurrentCursor = tilesetID;
+    }
+
     private void PaintTiles(Point pos, List<TileObject> selectedTiles)
     {
         SignalManager.Get<ResetSelectionAreaSignal>().Dispatch(pos);
 
-        MapModel? model = GetModel();
+        MapModel? mapModel = GetModel();
 
-        if (model == null)
+        if (mapModel == null)
         {
             return;
         }
+
+        if (selectedTiles.Count == 0)
+        {
+            return;
+        }
+
+        if (string.IsNullOrEmpty(CurrentCursor))
+        {
+            return;
+        }
+
+        // Invalidate map cache if there is going to be a change on it
+
+        List<string> mapIDs = [];
+
+        foreach (TileObject tile in selectedTiles)
+        {
+            if (!mapIDs.Contains(tile.MapID))
+            {
+                MapUtils.InvalidateImageFromCache(tile.MapID);
+                mapIDs.Add(tile.MapID);
+            }
+        }
+
+        // Get the list of tiles that are going to be modified
+        List<Tile> tiles = mapModel.GetTilesFromRegularBackground([.. selectedTiles.Select(t => (t.MapID, t.Index))]);
+
+        // "Paint" them
+        foreach (Tile item in tiles)
+        {
+            item.PaletteIndex = 0;
+            item.TileSetRect = Rectangle<int>.Empty;
+            item.TileSetID = CurrentCursor;
+        }
+
+//        ProjectItem?.FileHandler?.Save();
+
+        LoadMapImage();
+    }
+
+    private void LoadMapImage()
+    {
+        WriteableBitmap? mapBitmap = null;
+
+        MapModel? model = GetModel();
+
+        if (model != null)
+        {
+//            MapImage = MapUtils.CreateMap(model);
+        }
+
+        MapImage = mapBitmap;
     }
 
     private void SelectTiles(Point pos, List<TileObject> selectedTiles)
@@ -1250,31 +1317,6 @@ public class MapViewModel : ItemViewModel
         _isMovingFromInsideCanvas = true;
     }
 
-    private void SaveTileProperties(TileObject tile)
-    {
-        if (_doNotSave)
-            return;
-
-        MapModel? model = GetModel();
-
-        if (model == null)
-        {
-            return;
-        }
-
-        MapUtils.InvalidateImageFromCache(tile.MapID);
-
-        //        sprite.FlipHorizontal = IsFlippedHorizontal;
-        //        sprite.FlipVertical = IsFlippedVertical;
-        //        sprite.GraphicMode = GraphicMode;
-        //        sprite.ObjectMode = ObjectMode;
-        //        sprite.EnableMosaic = IsEnableMosaic;
-        //
-        //        SignalManager.Get<UpdateSpriteVisualPropertiesSignal>().Dispatch(sprite.SpriteID, sprite.FlipHorizontal, sprite.FlipVertical);
-
-        ProjectItem?.FileHandler?.Save();
-    }
-
     private void UpdateMouseSelectionArea(Point positionInCanvas)
     {
         if (MouseSelectionActive == Visibility.Collapsed)
@@ -1307,9 +1349,15 @@ public class MapViewModel : ItemViewModel
 
     private List<TileObject> GetSelectedTile(Point position)
     {
-        int cellIndex = MapUtils.GetCellIndexFromPoint(position);
+        (int mapIndex, int cellIndex) = MapUtils.GetCellIndexFromPoint(position);
 
-        return [Tiles0[cellIndex]];
+        return mapIndex switch
+        {
+            3 => [Tiles3[cellIndex]],
+            2 => [Tiles2[cellIndex]],
+            1 => [Tiles1[cellIndex]],
+            0 or _ => [Tiles0[cellIndex]]
+        };
     }
 
     private List<TileObject> CheckMouseAreaSelected()

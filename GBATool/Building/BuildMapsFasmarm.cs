@@ -250,7 +250,7 @@ public sealed class BuildMapsFasmarm : Building<BuildMapsFasmarm>
                 continue;
             }
 
-            if (!tileSetModel.GetSpriteIndex(tile.SpriteTileID, out int spriteIndex))
+            if (!tileSetModel.GetSpriteIndex(tile.TileSetRect, out int spriteIndex))
             {
                 continue;
             }

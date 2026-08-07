@@ -193,6 +193,8 @@ namespace GBATool
             tbMapMove.IsChecked = false;
             tbMapPaint.IsChecked = false;
             tbMapSelect.IsChecked = false;
+
+            SignalManager.Get<CheckMapEraseToolSignal>().Dispatch();
         }
 
         private void OnMapSelectTool()
@@ -209,6 +211,8 @@ namespace GBATool
             tbMapMove.IsChecked = false;
             tbMapPaint.IsChecked = false;
             tbMapErase.IsChecked = false;
+
+            SignalManager.Get<CheckMapSelectToolSignal>().Dispatch();
         }
 
         private void OnMapBucketTool()
@@ -224,6 +228,8 @@ namespace GBATool
             tbMapMove.IsChecked = false;
             tbMapPaint.IsChecked = false;
             tbMapSelect.IsChecked = false;
+
+            SignalManager.Get<CheckMapBucketToolSignal>().Dispatch();
         }
 
         private void OnMapMoveTool()
@@ -240,6 +246,8 @@ namespace GBATool
             tbMapErase.IsChecked = false;
             tbMapPaint.IsChecked = false;
             tbMapSelect.IsChecked = false;
+
+            SignalManager.Get<CheckMapMoveToolSignal>().Dispatch();
         }
 
         private void OnMapPaintTool()
@@ -255,6 +263,8 @@ namespace GBATool
             tbMapMove.IsChecked = false;
             tbMapErase.IsChecked = false;
             tbMapSelect.IsChecked = false;
+
+            SignalManager.Get<CheckMapPaintToolSignal>().Dispatch();
         }
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)

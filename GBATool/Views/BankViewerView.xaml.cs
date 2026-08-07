@@ -642,7 +642,7 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
                 Source = cropped
             };
 
-            SignalManager.Get<UseBitmapAsCursorSignal>().Dispatch(imageCtrl);
+            SignalManager.Get<UseBitmapAsCursorSignal>().Dispatch(imageCtrl, _bankModel?.GUID ?? string.Empty);
 
             if (ToolBarMapTool == MapFunctionality.Select)
             {

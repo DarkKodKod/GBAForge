@@ -24,14 +24,14 @@ public static class MapUtils
         bool canContinue = true;
         while (canContinue)
         {
-            int index = GetCellIndexFromPoint(new Point(pointX, pointY));
+            (int _, int cellIndex) = GetCellIndexFromPoint(new Point(pointX, pointY));
 
-            if (index >= 1024)
+            if (cellIndex >= 1024)
             {
                 break;
             }
 
-            indices.Add(index);
+            indices.Add(cellIndex);
 
             pointX += CellSize;
 
@@ -50,11 +50,14 @@ public static class MapUtils
         return indices;
     }
 
-    public static int GetCellIndexFromPoint(Point point)
+    public static (int mapIndex, int cellIndex) GetCellIndexFromPoint(Point point)
     {
+        // TODO: calculate the map index based on the input point
+        int mapIndex = 0;
+
         int cellIndex = ((int)point.X / CellSize) + ((int)point.Y / CellSize * MapSizeWidth);
 
-        return cellIndex;
+        return (mapIndex, cellIndex);
     }
 
     public static Point GetCellPointFromIndex(int cellIndex, int mapIndex)

@@ -70,7 +70,7 @@ namespace GBATool.Views
             #endregion
         }
 
-        private void OnUseBitmapAsCursor(Image image)
+        private void OnUseBitmapAsCursor(Image image, string _)
         {
             cursorImage.Source = image.Source;
         }
