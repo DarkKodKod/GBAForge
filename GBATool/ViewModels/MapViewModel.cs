@@ -1,5 +1,4 @@
 ﻿using ArchitectureLibrary.Signals;
-using ArchitectureLibrary.Utils;
 using GBATool.Commands.Banks;
 using GBATool.Commands.Input;
 using GBATool.Enums;
@@ -161,11 +160,7 @@ public class MapViewModel : ItemViewModel
     #endregion
 
     #region get/set
-    public string CurrentCursor
-    {
-        get;
-        set;
-    } = string.Empty;
+    public MapPaintCursorVO? CurrentCursor { get; set; } = null;
 
     public TileObject? SelectedTile
     {
@@ -1206,9 +1201,9 @@ public class MapViewModel : ItemViewModel
         _isMovingFromInsideCanvas = false;
     }
 
-    private void OnUseBitmapAsCursor(Image image, string tilesetID)
+    private void OnUseBitmapAsCursor(MapPaintCursorVO vo)
     {
-        CurrentCursor = tilesetID;
+        CurrentCursor = vo;
     }
 
     private void PaintTiles(Point pos, List<TileObject> selectedTiles)
@@ -1227,7 +1222,7 @@ public class MapViewModel : ItemViewModel
             return;
         }
 
-        if (string.IsNullOrEmpty(CurrentCursor))
+        if (CurrentCursor == null || string.IsNullOrEmpty(CurrentCursor.TilesetID))
         {
             return;
         }
@@ -1251,12 +1246,11 @@ public class MapViewModel : ItemViewModel
         // "Paint" them
         foreach (Tile item in tiles)
         {
-            item.PaletteIndex = 0;
-            item.TileSetRect = Rectangle<int>.Empty;
-            item.TileSetID = CurrentCursor;
+            item.TileSetOrigin = default;
+            item.TileSetID = CurrentCursor.TilesetID;
         }
 
-//        ProjectItem?.FileHandler?.Save();
+        //        ProjectItem?.FileHandler?.Save();
 
         LoadMapImage();
     }
@@ -1269,7 +1263,7 @@ public class MapViewModel : ItemViewModel
 
         if (model != null)
         {
-//            MapImage = MapUtils.CreateMap(model);
+            mapBitmap = MapUtils.CreateMap(model);
         }
 
         MapImage = mapBitmap;

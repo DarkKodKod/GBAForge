@@ -11,7 +11,7 @@ using TileBlocks = (int width, int height, int numberOfTiles);
 // Information taken from: https://sneslab.net/wiki/Graphics_Format
 public static class ImageProcessing
 {
-    public static byte[]? ConvertToXbpp(BitsPerPixel bpp, in WriteableBitmap bitmap, in TileBlocks cellsCount, in List<Color> palette, ref List<string> warnings)
+    public static byte[]? ConvertToXbpp(BitsPerPixel bpp, WriteableBitmap bitmap, in TileBlocks cellsCount, in List<Color> palette, ref List<string> warnings)
     {
         int bitsPerPixel = (int)bpp;
         const int bitPlaneSizeInBytes = 8; // 8x8 bits in a tile

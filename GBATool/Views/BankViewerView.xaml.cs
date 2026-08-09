@@ -633,7 +633,19 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
         SpriteRectHeight = h;
         SpriteRectVisibility = Visibility.Visible;
 
-        WriteableBitmap cropped = _metaData.image.Crop(x, y, w, h);
+        WriteableBitmap cropped = _metaData.Image.Crop(x, y, w, h);
+
+        List<Point> rects = [];
+
+        int xPos = x;
+        int yPos = y;
+        for (int i = 0; i < SpriteRectWidth; i += MapUtils.CellSize)
+        {
+            for (int j = 0; j < SpriteRectHeight; j += MapUtils.CellSize)
+            {
+                rects.Add(new(xPos + i, yPos + j));
+            }
+        }
 
         using (cropped.GetBitmapContext())
         {
@@ -642,7 +654,7 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
                 Source = cropped
             };
 
-            SignalManager.Get<UseBitmapAsCursorSignal>().Dispatch(imageCtrl, _bankModel?.GUID ?? string.Empty);
+            SignalManager.Get<UseBitmapAsCursorSignal>().Dispatch(new(imageCtrl, _bankModel?.GUID ?? string.Empty, [.. rects]));
 
             if (ToolBarMapTool == MapFunctionality.Select)
             {
@@ -879,7 +891,7 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
             return;
         }
 
-        BankImage = _metaData.image;
+        BankImage = _metaData.Image;
 
         SignalManager.Get<UpdateBankViewerParentWithImageMetadataSignal>().Dispatch(_metaData);
     }
@@ -938,7 +950,7 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
             int firstIndex = 0;
             int spriteTilesTotal = 0;
 
-            foreach (SpriteModel sprite in _metaData.bankSprites)
+            foreach (SpriteModel sprite in _metaData.BankSprites)
             {
                 if (sprite.Shape == SpriteShape.Custom || sprite.Size == SpriteSize.Custom)
                 {

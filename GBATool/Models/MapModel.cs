@@ -1,5 +1,4 @@
-﻿using ArchitectureLibrary.Utils;
-using GBATool.Enums;
+﻿using GBATool.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,19 +12,19 @@ public class Tile
     public bool FlipHorizontal { get; set; }
     public bool FlipVertical { get; set; }
     public byte PaletteIndex { get; set; }
-    public Rectangle<int> TileSetRect { get; set; } = Rectangle<int>.Empty;
+    public Point TileSetOrigin { get; set; } = default;
     public string TileSetID { get; set; } = string.Empty;
     public string MapID { get; init; } = string.Empty;
     public int CellIndex { get; init; }
 
     public bool IsEmpty()
     {
-        return TileSetRect == Rectangle<int>.Empty || string.IsNullOrEmpty(TileSetID);
+        return (TileSetOrigin.X == 0 && TileSetOrigin.Y == 0) || string.IsNullOrEmpty(TileSetID);
     }
 
     public void Clean()
     {
-        TileSetRect = Rectangle<int>.Empty;
+        TileSetOrigin = default;
         TileSetID = string.Empty;
     }
 }

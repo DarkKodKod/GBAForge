@@ -112,7 +112,7 @@ public sealed class BuildMemoryBanksButano : Building<BuildMemoryBanksButano>
 
         BankImageMetaData metaData = BankUtils.CreateImage(bank, false, imageWidth, imageHeight);
 
-        if (metaData.image == null)
+        if (metaData.Image == null)
         {
             return;
         }
@@ -126,7 +126,7 @@ public sealed class BuildMemoryBanksButano : Building<BuildMemoryBanksButano>
             BankUtils.GenerateTemporalPalette(bank, ref palette);
         }
 
-        foreach (SpriteModel sprite in metaData.bankSprites)
+        foreach (SpriteModel sprite in metaData.BankSprites)
         {
             KeyValuePair<string, SpriteInfo> spriteInfo = metaData.Sprites.First(x => x.Key == sprite.ID);
 
@@ -155,7 +155,7 @@ public sealed class BuildMemoryBanksButano : Building<BuildMemoryBanksButano>
             {
                 List<string> warnings = [];
 
-                imageData = ImageProcessing.ConvertToXbpp(bank.BitsPerPixel, in spriteBitmap, in tileBlicks, in palette, ref warnings);
+                imageData = ImageProcessing.ConvertToXbpp(bank.BitsPerPixel, spriteBitmap, in tileBlicks, in palette, ref warnings);
 
                 foreach (string item in warnings)
                 {

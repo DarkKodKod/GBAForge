@@ -60,7 +60,7 @@ public sealed class BuildMemoryBanksBinary : Building<BuildMemoryBanksBinary>
 
             BankImageMetaData metaData = BankUtils.CreateImage(bank, false, imageWidth, imageHeight);
 
-            if (metaData.image == null)
+            if (metaData.Image == null)
             {
                 continue;
             }
@@ -76,13 +76,13 @@ public sealed class BuildMemoryBanksBinary : Building<BuildMemoryBanksBinary>
 
             byte[]? imageData = null;
 
-            using (metaData.image.GetBitmapContext())
+            using (metaData.Image.GetBitmapContext())
             {
                 try
                 {
                     List<string> warnings = [];
 
-                    imageData = ImageProcessing.ConvertToXbpp(bank.BitsPerPixel, in metaData.image, in cellsCount, in palette, ref warnings);
+                    imageData = ImageProcessing.ConvertToXbpp(bank.BitsPerPixel, metaData.Image, in cellsCount, in palette, ref warnings);
 
                     foreach (string item in warnings)
                     {

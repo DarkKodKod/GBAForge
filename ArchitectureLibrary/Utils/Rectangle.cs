@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace ArchitectureLibrary.Utils;
 
-public class Rectangle<T> where T : struct, INumber<T>
+public struct Rectangle<T> where T : struct, INumber<T>
 {
     public T X { get; set; }
     public T Y { get; set; }
@@ -26,12 +26,6 @@ public class Rectangle<T> where T : struct, INumber<T>
 
     public static bool operator ==(Rectangle<T> r1, Rectangle<T> r2)
     {
-        if (ReferenceEquals(r1, r2)) 
-            return true;
-        
-        if (r1 is null || r2 is null) 
-            return false;
-
         return r1.X == r2.X &&
                r1.Y == r2.Y &&
                r1.Width == r2.Width &&
@@ -65,7 +59,7 @@ public class Rectangle<T> where T : struct, INumber<T>
         Height *= scalar;
     }
 
-    public override bool Equals(object? obj) => obj is Rectangle<T> other && this == other;
-    public override int GetHashCode() => HashCode.Combine(X, Y, Width, Height);
-    public override string ToString() => $"[X: {X}, Y: {Y}, W: {Width}, H: {Height}]";
+    public override readonly bool Equals(object? obj) => obj is Rectangle<T> other && this == other;
+    public override readonly int GetHashCode() => HashCode.Combine(X, Y, Width, Height);
+    public override readonly string ToString() => $"[X: {X}, Y: {Y}, W: {Width}, H: {Height}]";
 }

@@ -1,5 +1,4 @@
 ﻿using ArchitectureLibrary.Signals;
-using ArchitectureLibrary.Utils;
 using GBATool.Enums;
 using GBATool.Signals;
 using GBATool.Utils;
@@ -121,21 +120,21 @@ public class TileSetModel : AFileModel
         return false;
     }
 
-    public bool GetSpriteIndex(Rectangle<int> rect, out int spriteIndex)
+    public bool GetTileIndex(Point origin, out int spriteIndex)
     {
         spriteIndex = -1;
 
         // TODO:
-//        for (int i = 0; i < Sprites.Count; i++)
-//        {
-//            SpriteModel sprite = Sprites[i];
-//
-//            if (sprite.ID == spriteID)
-//            {
-//                spriteIndex = i;
-//                return true;
-//            }
-//        }
+        //        for (int i = 0; i < Sprites.Count; i++)
+        //        {
+        //            SpriteModel sprite = Sprites[i];
+        //
+        //            if (sprite.ID == spriteID)
+        //            {
+        //                spriteIndex = i;
+        //                return true;
+        //            }
+        //        }
 
         return false;
     }

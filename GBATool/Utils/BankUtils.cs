@@ -18,11 +18,26 @@ public class SpriteInfo
 
 public class BankImageMetaData
 {
-    public WriteableBitmap? image;
-    public List<(int, string, string)> SpriteIndices = [];
-    public List<string> UniqueTileSet = [];
-    public List<SpriteModel> bankSprites = [];
-    public Dictionary<string, SpriteInfo> Sprites = [];
+    /// <value>
+    /// Property <c>image</c> represents the bank image.
+    /// </value>
+    public WriteableBitmap? Image { get; set; }
+    /// <value>
+    /// Property <c>SpriteIndices</c> Is the list of each sprites, its tilesetID and what is its index in the bank.
+    /// </value>
+    public List<(int, string, string)> SpriteIndices { get; set; } = [];
+    /// <value>
+    /// Property <c>UniqueTileSet</c> List of tileset used by the bank, it is called unique tileset because each tileset ID appears only once.
+    /// </value>
+    public List<string> UniqueTileSet { get; set; } = [];
+    /// <value>
+    /// Property <c>BankSprites</c> The list of spritemodels that are part of the bank.
+    /// </value>
+    public List<SpriteModel> BankSprites { get; set; } = [];
+    /// <value>
+    /// Property <c>Sprites</c> Is the list of the individual sprite information for each of the SpriteModels, it is indexed by the SpriteModel ID.
+    /// </value>
+    public Dictionary<string, SpriteInfo> Sprites { get; set; } = [];
 }
 
 public static class BankUtils
@@ -76,7 +91,7 @@ public static class BankUtils
                 continue;
             }
 
-            metaData.bankSprites.Add(sprite);
+            metaData.BankSprites.Add(sprite);
 
             int width = 0;
             int height = 0;
@@ -177,7 +192,7 @@ public static class BankUtils
             }
         }
 
-        metaData.image = bankBitmap;
+        metaData.Image = bankBitmap;
 
         return metaData;
     }

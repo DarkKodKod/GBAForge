@@ -1,6 +1,7 @@
 ﻿using ArchitectureLibrary.Signals;
 using GBATool.Signals;
 using GBATool.Utils;
+using GBATool.VOs;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -70,9 +71,9 @@ namespace GBATool.Views
             #endregion
         }
 
-        private void OnUseBitmapAsCursor(Image image, string _)
+        private void OnUseBitmapAsCursor(MapPaintCursorVO vo)
         {
-            cursorImage.Source = image.Source;
+            cursorImage.Source = vo.Image.Source;
         }
 
         private void OnTryCaptureMouse(string name)

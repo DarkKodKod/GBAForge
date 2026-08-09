@@ -329,7 +329,7 @@ public class BanksViewModel : ItemViewModel
         if (metaData == null)
             return;
 
-        BankSprites = [.. metaData.bankSprites];
+        BankSprites = [.. metaData.BankSprites];
 
         FileModelVO[] tileSets = [.. ProjectFiles.GetModels<TileSetModel>()];
 

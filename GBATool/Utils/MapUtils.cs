@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using GBATool.Models;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media.Imaging;
@@ -74,5 +75,12 @@ public static class MapUtils
         {
             _frameBitmapCache.TryRemove(mapID, out WriteableBitmap? _);
         }
+    }
+
+    public static WriteableBitmap? CreateMap(MapModel model)
+    {
+        WriteableBitmap? bitmap = null;
+
+        return bitmap;
     }
 }
