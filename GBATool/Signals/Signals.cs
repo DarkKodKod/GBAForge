@@ -152,7 +152,7 @@ public class ObtainTransparentColorSignal : Signal<SpriteModel> { }
 public class GeneratePaletteFromBankSignal : Signal<string, IEnumerable<SpriteModel>, Color, BitsPerPixel> { }
 public class SetBankModelToBankViewerSignal : Signal<BankModel?> { }
 public class CharacterFrameEditorViewLoadedSignal : Signal { }
-public class UpdateBankViewerParentWithImageMetadataSignal : Signal<BankImageMetaData?> { }
+public class UpdateBankViewerParentWithImageMetadataSignal : Signal<string, BankImageMetaData?> { }
 public class ReloadBankImageSignal : Signal { }
 public class MoveDownSelectedSpriteElementSignal : Signal<int> { }
 public class RemoveSpriteSelectionFromBank : Signal { }

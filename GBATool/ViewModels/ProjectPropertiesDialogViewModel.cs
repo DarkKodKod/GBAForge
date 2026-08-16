@@ -294,6 +294,8 @@ public class ProjectPropertiesDialogViewModel : ViewModel
                 project.SpritePatternFormat = SelectedSpriteFormat;
 
                 SignalManager.Get<ReloadBankImageSignal>().Dispatch();
+
+                BankModel.MetaDataCache.Clear();
             }
 
             project.Build.OutputFormatHeader = SelectedOutputFormatHeader;

@@ -354,13 +354,10 @@ public sealed class BuildMetaSpritesFasmarm : Building<BuildMetaSpritesFasmarm>
     {
         int index = 0;
 
-        try
+        if (!bankModel.GetTileIndex(sprite.SpriteID, ref index))
         {
-            _ = bankModel.GetTileIndex(sprite.SpriteID, ref index);
-        }
-        catch (Exception e)
-        {
-            AddError(e.Message);
+            AddError("No sprite found in the bank");
+            return;
         }
 
         string tileIndex = Util.ConvertShortToBits((short)index);

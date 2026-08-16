@@ -1,6 +1,5 @@
-﻿using System.Windows;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 
 namespace GBATool.VOs;
 
-public record MapPaintCursorVO(Image Image, string TilesetID, Point[] Rects);
+public record MapPaintCursorVO(Image Image, string BankID, VisualMapTileVO[,] VisualMapTiles);

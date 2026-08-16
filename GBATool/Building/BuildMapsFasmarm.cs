@@ -16,6 +16,8 @@ using System.Threading.Tasks;
 
 namespace GBATool.Building;
 
+using TileBlocks = (int width, int height, int numberOfTiles);
+
 public sealed class BuildMapsFasmarm : Building<BuildMapsFasmarm>
 {
     private readonly string[] _outputPaths = new string[1];
@@ -243,17 +245,33 @@ public sealed class BuildMapsFasmarm : Building<BuildMapsFasmarm>
 
         foreach (Tile tile in mapTiles)
         {
-            TileSetModel? tileSetModel = ProjectFiles.GetModel<TileSetModel>(tile.TileSetID);
+            BankModel? bankModel = ProjectFiles.GetModel<BankModel>(tile.BankID);
 
-            if (tileSetModel == null)
+            if (bankModel == null)
             {
                 continue;
             }
 
-            if (!tileSetModel.GetTileIndex(tile.TileSetOrigin, out int spriteIndex))
+            if (!BankModel.MetaDataCache.TryGetValue(bankModel.GUID, out BankImageMetaData? metaData))
+            {
+                TileBlocks cellsCount = bankModel.GetBoundingBoxSize();
+
+                int imageWidth = cellsCount.width * BankUtils.SizeOfCellInPixels;
+                int imageHeight = cellsCount.height * BankUtils.SizeOfCellInPixels;
+
+                metaData = BankUtils.CreateImage(bankModel, false, imageWidth, imageHeight);
+
+                _ = BankModel.MetaDataCache.TryAdd(bankModel.GUID, metaData);
+            }
+
+            TileInfo? tileInfo = metaData.IndividualTileInfo.First(t => t.TilesetID == tile.TileSetID && t.OriginInTileset == tile.TileSetOrigin);
+
+            if (tileInfo == null)
             {
                 continue;
             }
+
+            int spriteIndex = tileInfo.TileIndex;
 
             ushort tileIndex = (ushort)(spriteIndex & 1023); // 1023 = 0000 0011 1111 1111b
             ushort horizontalFlip = (ushort)(tile.FlipHorizontal ? 1024 : 0); // 1023 = 0000 0100 0000 0000b

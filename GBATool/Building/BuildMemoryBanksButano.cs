@@ -110,7 +110,12 @@ public sealed class BuildMemoryBanksButano : Building<BuildMemoryBanksButano>
         int imageWidth = cellsCount.width * BankUtils.SizeOfCellInPixels;
         int imageHeight = cellsCount.height * BankUtils.SizeOfCellInPixels;
 
-        BankImageMetaData metaData = BankUtils.CreateImage(bank, false, imageWidth, imageHeight);
+        if (!BankModel.MetaDataCache.TryGetValue(bank.GUID, out BankImageMetaData? metaData))
+        {
+            metaData = BankUtils.CreateImage(bank, false, imageWidth, imageHeight);
+
+            _ = BankModel.MetaDataCache.TryAdd(bank.GUID, metaData);
+        }
 
         if (metaData.Image == null)
         {
@@ -139,11 +144,11 @@ public sealed class BuildMemoryBanksButano : Building<BuildMemoryBanksButano>
             int height = 0;
             SpriteUtils.ConvertToWidthHeight(sprite.Shape, sprite.Size, ref width, ref height);
 
-            List<(int, string, string)> indices = metaData.SpriteIndices.FindAll(x => x.Item2 == sprite.ID);
+            List<TileInfo> tilesInTheBank = metaData.IndividualTileInfo.FindAll(x => x.SpriteID == sprite.ID);
 
             TileBlocks tileBlicks = new()
             {
-                numberOfTiles = indices.Count,
+                numberOfTiles = tilesInTheBank.Count,
                 width = width / 8,
                 height = height / 8,
             };

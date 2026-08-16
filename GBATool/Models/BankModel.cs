@@ -2,7 +2,7 @@
 using GBATool.Enums;
 using GBATool.FileSystem;
 using GBATool.Utils;
-using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using System.Windows;
@@ -19,6 +19,8 @@ public record SpriteRef
 
 public class BankModel : AFileModel
 {
+    public static ConcurrentDictionary<string, BankImageMetaData> MetaDataCache { get; } = [];
+
     private const string _extensionKey = "extensionBanks";
 
     [JsonIgnore]
@@ -120,7 +122,7 @@ public class BankModel : AFileModel
             }
         }
 
-        throw new InvalidOperationException("No sprite found in the bank");
+        return false;
     }
 
     public (bool, string) RegisterSprite(SpriteModel sprite)

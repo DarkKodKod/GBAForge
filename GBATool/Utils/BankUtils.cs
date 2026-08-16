@@ -3,7 +3,10 @@ using GBATool.Enums;
 using GBATool.FileSystem;
 using GBATool.Models;
 using GBATool.VOs;
+using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
@@ -16,6 +19,15 @@ public class SpriteInfo
     public int OffsetY { get; set; } = 0;
 }
 
+public class TileInfo
+{
+    public int TileIndex { get; set; } = 0;
+    public string SpriteID { get; set; } = string.Empty;
+    public string TilesetID { get; set; } = string.Empty;
+    public string BitmapHash { get; set; } = string.Empty;
+    public Point OriginInTileset { get; set; } = new Point(0, 0);
+}
+
 public class BankImageMetaData
 {
     /// <value>
@@ -23,9 +35,12 @@ public class BankImageMetaData
     /// </value>
     public WriteableBitmap? Image { get; set; }
     /// <value>
-    /// Property <c>SpriteIndices</c> Is the list of each sprites, its tilesetID and what is its index in the bank.
+    /// Property <c>IndividualTileInfo</c> Is the list of each sprites, its tilesetID and what is its index in the bank.
+    /// <para/>
+    /// The Tuple represent this values: (tile index, spriteID, tilesetID, 8x8 pixels hash)
+    /// <para/>
     /// </value>
-    public List<(int, string, string)> SpriteIndices { get; set; } = [];
+    public List<TileInfo> IndividualTileInfo { get; set; } = [];
     /// <value>
     /// Property <c>UniqueTileSet</c> List of tileset used by the bank, it is called unique tileset because each tileset ID appears only once.
     /// </value>
@@ -143,7 +158,15 @@ public static class BankUtils
 
                         Util.CopyBitmapImageToWriteableBitmap(ref bankBitmap, destX, destY, cropped);
 
-                        metaData.SpriteIndices.Add((index, sprite.ID, sprite.TileSetID));
+                        metaData.IndividualTileInfo.Add(
+                            new()
+                            {
+                                TileIndex = index,
+                                SpriteID = sprite.ID,
+                                TilesetID = sprite.TileSetID,
+                                BitmapHash = HashTile(cropped),
+                                OriginInTileset = new Point(posX, posY)
+                            });
 
                         posX += SizeOfCellInPixels;
 
@@ -170,7 +193,15 @@ public static class BankUtils
 
                         Util.CopyBitmapImageToWriteableBitmap(ref bankBitmap, destX + widthNextPosition, destY + heightNextPosition, cropped);
 
-                        metaData.SpriteIndices.Add((index, sprite.ID, sprite.TileSetID));
+                        metaData.IndividualTileInfo.Add(
+                            new()
+                            {
+                                TileIndex = index,
+                                SpriteID = sprite.ID,
+                                TilesetID = sprite.TileSetID,
+                                BitmapHash = HashTile(cropped),
+                                OriginInTileset = new Point(posX, posY)
+                            });
 
                         posX += SizeOfCellInPixels;
 
@@ -195,6 +226,21 @@ public static class BankUtils
         metaData.Image = bankBitmap;
 
         return metaData;
+    }
+
+    public static string HashTile(WriteableBitmap bitmapSource)
+    {
+        int stride = (bitmapSource.PixelWidth * bitmapSource.Format.BitsPerPixel + 7) / 8;
+
+        int size = stride * bitmapSource.PixelHeight;
+
+        byte[] pixels = new byte[size];
+
+        bitmapSource.CopyPixels(pixels, stride, 0);
+
+        byte[] hashBytes = SHA256.HashData(pixels);
+
+        return Convert.ToHexString(hashBytes);
     }
 
     public static void GenerateTemporalPalette(BankModel bankModel, ref List<Color> palette)

@@ -398,4 +398,28 @@ public static class Util
 
         return Path.GetFullPath(fullPath);
     }
+
+    public static T[,] ConvertListListInto2DArray<T>(IList<IList<T>> sourceList)
+    {
+        int rows = sourceList.Count;
+        int cols = rows > 0 ? sourceList[0].Count : 0;
+
+        T[,] targetArray = new T[rows, cols];
+
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < cols; j++)
+            {
+                IList<T> innerList = sourceList[i];
+                object? value = innerList[j];
+
+                if (value is T element)
+                {
+                    targetArray[i, j] = element;
+                }
+            }
+        }
+
+        return targetArray;
+    }
 }

@@ -566,17 +566,22 @@ public class CharacterFrameEditorViewModel : ViewModel
             scaledHeight = (BankUtils.MaxTextureCellsWidth / 2) * BankUtils.SizeOfCellInPixels;
         }
 
-        BankImageMetaData meteaData = BankUtils.CreateImage(
-            bankModel,
-            true,
-            BankUtils.MaxTextureCellsWidth * BankUtils.SizeOfCellInPixels,
-            scaledHeight);
+        if (!BankModel.MetaDataCache.TryGetValue(bankModel.GUID, out BankImageMetaData? metaData))
+        {
+            metaData = BankUtils.CreateImage(
+                bankModel,
+                true,
+                BankUtils.MaxTextureCellsWidth * BankUtils.SizeOfCellInPixels,
+                scaledHeight);
+
+            _ = BankModel.MetaDataCache.TryAdd(bankModel.GUID, metaData);
+        }
 
         List<SpriteControlVO> sprites = [];
 
         foreach (KeyValuePair<string, CharacterSprite> item in frame.Tiles)
         {
-            if (!meteaData.Sprites.TryGetValue(item.Value.SpriteID, out SpriteInfo? spriteInfo))
+            if (!metaData.Sprites.TryGetValue(item.Value.SpriteID, out SpriteInfo? spriteInfo))
             {
                 continue;
             }
@@ -606,7 +611,7 @@ public class CharacterFrameEditorViewModel : ViewModel
             sprites.Add(sprite);
         }
 
-        return (meteaData, sprites, frame.BankID);
+        return (metaData, sprites, frame.BankID);
     }
 
     private void SelectBank(string bankID)

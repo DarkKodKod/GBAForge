@@ -58,7 +58,12 @@ public sealed class BuildMemoryBanksBinary : Building<BuildMemoryBanksBinary>
             int imageWidth = cellsCount.width * BankUtils.SizeOfCellInPixels;
             int imageHeight = cellsCount.height * BankUtils.SizeOfCellInPixels;
 
-            BankImageMetaData metaData = BankUtils.CreateImage(bank, false, imageWidth, imageHeight);
+            if (!BankModel.MetaDataCache.TryGetValue(bank.GUID, out BankImageMetaData? metaData))
+            {
+                metaData = BankUtils.CreateImage(bank, false, imageWidth, imageHeight);
+
+                _ = BankModel.MetaDataCache.TryAdd(bank.GUID, metaData);
+            }
 
             if (metaData.Image == null)
             {

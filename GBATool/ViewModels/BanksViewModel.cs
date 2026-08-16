@@ -324,7 +324,7 @@ public class BanksViewModel : ItemViewModel
         ProjectItem?.FileHandler?.Save();
     }
 
-    private void OnUpdateBankViewerParentWithImageMetadata(BankImageMetaData? metaData)
+    private void OnUpdateBankViewerParentWithImageMetadata(string bankID, BankImageMetaData? metaData)
     {
         if (metaData == null)
             return;
@@ -350,6 +350,8 @@ public class BanksViewModel : ItemViewModel
             return;
 
         ProjectItem?.FileHandler?.Save();
+
+        _ = BankModel.MetaDataCache.TryRemove(bankID, out _);
     }
 
     private void OnReloadBankImage()

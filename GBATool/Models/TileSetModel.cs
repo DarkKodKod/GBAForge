@@ -119,23 +119,4 @@ public class TileSetModel : AFileModel
 
         return false;
     }
-
-    public bool GetTileIndex(Point origin, out int spriteIndex)
-    {
-        spriteIndex = -1;
-
-        // TODO:
-        //        for (int i = 0; i < Sprites.Count; i++)
-        //        {
-        //            SpriteModel sprite = Sprites[i];
-        //
-        //            if (sprite.ID == spriteID)
-        //            {
-        //                spriteIndex = i;
-        //                return true;
-        //            }
-        //        }
-
-        return false;
-    }
 }

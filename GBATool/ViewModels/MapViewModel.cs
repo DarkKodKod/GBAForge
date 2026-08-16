@@ -1171,6 +1171,7 @@ public class MapViewModel : ItemViewModel
         }
 
         List<TileObject> selectedTiles;
+        bool clickedOnTile = false;
 
         if (MouseSelectionActive == Visibility.Visible)
         {
@@ -1178,7 +1179,8 @@ public class MapViewModel : ItemViewModel
         }
         else
         {
-            selectedTiles = GetSelectedTile(pos);
+            selectedTiles = [GetSelectedTile(pos)];
+            clickedOnTile = true;
         }
 
         switch (CurrentMapFunctionality)
@@ -1190,7 +1192,7 @@ public class MapViewModel : ItemViewModel
             case MapFunctionality.Move:
                 break;
             case MapFunctionality.Paint:
-                PaintTiles(pos, selectedTiles);
+                PaintTiles(pos, selectedTiles, clickedOnTile);
                 break;
             case MapFunctionality.BucketPaint:
                 break;
@@ -1206,7 +1208,7 @@ public class MapViewModel : ItemViewModel
         CurrentCursor = vo;
     }
 
-    private void PaintTiles(Point pos, List<TileObject> selectedTiles)
+    private void PaintTiles(Point pos, List<TileObject> selectedTiles, bool clickedOnTile)
     {
         SignalManager.Get<ResetSelectionAreaSignal>().Dispatch(pos);
 
@@ -1222,7 +1224,7 @@ public class MapViewModel : ItemViewModel
             return;
         }
 
-        if (CurrentCursor == null || string.IsNullOrEmpty(CurrentCursor.TilesetID))
+        if (CurrentCursor == null)
         {
             return;
         }
@@ -1241,13 +1243,32 @@ public class MapViewModel : ItemViewModel
         }
 
         // Get the list of tiles that are going to be modified
-        List<Tile> tiles = mapModel.GetTilesFromRegularBackground([.. selectedTiles.Select(t => (t.MapID, t.Index))]);
+        Tile[] tiles = [.. mapModel.GetTilesFromRegularBackground([.. selectedTiles.Select(t => (t.MapID, t.Index))])];
 
-        // "Paint" them
-        foreach (Tile item in tiles)
+        int tileIndex = 0;
+
+        // Paint from the clicked tile
+        if (clickedOnTile)
         {
-            item.TileSetOrigin = default;
-            item.TileSetID = CurrentCursor.TilesetID;
+            VisualMapTileVO[,] array2DOfTiles = CurrentCursor.VisualMapTiles;
+
+            for (int col = 0; col < array2DOfTiles.GetLength(0); col++)
+            {
+                for (int row = 0; row < array2DOfTiles.GetLength(1); row++)
+                {
+                    VisualMapTileVO val = array2DOfTiles[col, row];
+
+                    if (val != VisualMapTileVO.Empty)
+                    {
+                        tiles[tileIndex].TileSetID = val.TileSetID;
+                        tiles[tileIndex].TileSetOrigin = val.Point;
+                    }
+                }
+            }
+        }
+        else
+        {
+            // Paint the area with tiles
         }
 
         //        ProjectItem?.FileHandler?.Save();
@@ -1341,16 +1362,16 @@ public class MapViewModel : ItemViewModel
         }
     }
 
-    private List<TileObject> GetSelectedTile(Point position)
+    private TileObject GetSelectedTile(Point position)
     {
         (int mapIndex, int cellIndex) = MapUtils.GetCellIndexFromPoint(position);
 
         return mapIndex switch
         {
-            3 => [Tiles3[cellIndex]],
-            2 => [Tiles2[cellIndex]],
-            1 => [Tiles1[cellIndex]],
-            0 or _ => [Tiles0[cellIndex]]
+            3 => Tiles3[cellIndex],
+            2 => Tiles2[cellIndex],
+            1 => Tiles1[cellIndex],
+            0 or _ => Tiles0[cellIndex]
         };
     }
 

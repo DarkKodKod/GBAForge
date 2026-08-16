@@ -11,6 +11,7 @@ using GBATool.VOs;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -611,6 +612,11 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
             return;
         }
 
+        if (_bankModel?.GUID == null)
+        {
+            return;
+        }
+
         int x = (int)Math.Floor((double)MouseSelectionOriginX / BankUtils.SizeOfCellInPixels) * BankUtils.SizeOfCellInPixels;
         int y = (int)Math.Floor((double)MouseSelectionOriginY / BankUtils.SizeOfCellInPixels) * BankUtils.SizeOfCellInPixels;
         int w = (int)Math.Ceiling((double)MouseSelectionWidth / BankUtils.SizeOfCellInPixels) * BankUtils.SizeOfCellInPixels;
@@ -635,16 +641,42 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
 
         WriteableBitmap cropped = _metaData.Image.Crop(x, y, w, h);
 
-        List<Point> rects = [];
+        List<IList<VisualMapTileVO>> copyOfTilesRowVO = [];
 
-        int xPos = x;
-        int yPos = y;
-        for (int i = 0; i < SpriteRectWidth; i += MapUtils.CellSize)
+        int posX = 0;
+        int posY = 0;
+        for (int j = 0; j < (SpriteRectHeight / MapUtils.CellSize); ++j)
         {
-            for (int j = 0; j < SpriteRectHeight; j += MapUtils.CellSize)
+            List<VisualMapTileVO> row = [];
+
+            for (int i = 0; i < (SpriteRectWidth / MapUtils.CellSize); ++i)
             {
-                rects.Add(new(xPos + i, yPos + j));
+                WriteableBitmap bitmap8x8 = cropped.Crop(posX, posY, MapUtils.CellSize, MapUtils.CellSize);
+
+                string bitmapHashed = BankUtils.HashTile(bitmap8x8);
+
+                TileInfo? foundTile = _metaData.IndividualTileInfo.FirstOrDefault(t => t.BitmapHash == bitmapHashed);
+
+                if (foundTile != null)
+                {
+                    row.Add(new()
+                    {
+                        TileSetID = foundTile.TilesetID,
+                        Point = foundTile.OriginInTileset
+                    });
+                }
+                else
+                {
+                    row.Add(VisualMapTileVO.Empty);
+                }
+
+                posX += MapUtils.CellSize;
             }
+
+            copyOfTilesRowVO.Add(row);
+
+            posX = 0;
+            posY += MapUtils.CellSize;
         }
 
         using (cropped.GetBitmapContext())
@@ -654,7 +686,9 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
                 Source = cropped
             };
 
-            SignalManager.Get<UseBitmapAsCursorSignal>().Dispatch(new(imageCtrl, _bankModel?.GUID ?? string.Empty, [.. rects]));
+            VisualMapTileVO[,] arrays = Util.ConvertListListInto2DArray(copyOfTilesRowVO);
+
+            SignalManager.Get<UseBitmapAsCursorSignal>().Dispatch(new(imageCtrl, _bankModel.GUID, arrays));
 
             if (ToolBarMapTool == MapFunctionality.Select)
             {
@@ -884,16 +918,18 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
     {
         SignalManager.Get<CleanupTileSetLinksSignal>().Dispatch();
 
-        _metaData = BankUtils.CreateImage(model, Force2DView, CanvasWidth, CanvasHeight);
-
-        if (_metaData == null)
+        if (!BankModel.MetaDataCache.TryGetValue(model.GUID, out BankImageMetaData? metaData))
         {
-            return;
+            metaData = BankUtils.CreateImage(model, Force2DView, CanvasWidth, CanvasHeight);
+
+            _ = BankModel.MetaDataCache.TryAdd(model.GUID, metaData);
         }
+
+        _metaData = metaData;
 
         BankImage = _metaData.Image;
 
-        SignalManager.Get<UpdateBankViewerParentWithImageMetadataSignal>().Dispatch(_metaData);
+        SignalManager.Get<UpdateBankViewerParentWithImageMetadataSignal>().Dispatch(model.GUID, _metaData);
     }
 
     private void OnBankImageUpdated()
@@ -990,16 +1026,19 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
             }
 
             // Going through the list again to find the first occurrence of this item
-            (int firstIndex, string _, string _) = _metaData.SpriteIndices.Find(item => item.Item2 == spriteModel.ID);
+            TileInfo? tileInfo = _metaData.IndividualTileInfo.Find(item => item.SpriteID == spriteModel.ID);
 
-            int canvasWidthInCells = CanvasWidth / BankUtils.SizeOfCellInPixels;
-            int left = (firstIndex % canvasWidthInCells) * BankUtils.SizeOfCellInPixels;
-            int top = (firstIndex / BankUtils.MaxTextureCellsWidth) * BankUtils.SizeOfCellInPixels;
+            if (tileInfo != null)
+            {
+                int canvasWidthInCells = CanvasWidth / BankUtils.SizeOfCellInPixels;
+                int left = (tileInfo.TileIndex % canvasWidthInCells) * BankUtils.SizeOfCellInPixels;
+                int top = (tileInfo.TileIndex / BankUtils.MaxTextureCellsWidth) * BankUtils.SizeOfCellInPixels;
 
-            SpriteRectLeft = left;
-            SpriteRectWidth = width;
-            SpriteRectHeight = height;
-            SpriteRectTop = top;
+                SpriteRectLeft = left;
+                SpriteRectWidth = width;
+                SpriteRectHeight = height;
+                SpriteRectTop = top;
+            }
         }
     }
 
@@ -1020,24 +1059,21 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
 
         int cellIndex = (canvasWidthInCells * yPos) + xPos;
 
-        (int _, string spriteID, string tileSetId) = _metaData.SpriteIndices.Find(item => item.Item1 == cellIndex);
+        TileInfo? tileInfo = _metaData.IndividualTileInfo.Find(item => item.TileIndex == cellIndex);
 
-        if (string.IsNullOrEmpty(spriteID))
+        if (tileInfo == null || string.IsNullOrEmpty(tileInfo.SpriteID))
         {
             return;
         }
 
-        // Going through the list again to find the first occurrence of this item
-        (int firstIndex, string _, string _) = _metaData.SpriteIndices.Find(item => item.Item2 == spriteID);
-
-        TileSetModel? tileSetModel = ProjectFiles.GetModel<TileSetModel>(tileSetId);
+        TileSetModel? tileSetModel = ProjectFiles.GetModel<TileSetModel>(tileInfo.TilesetID);
 
         if (tileSetModel == null)
         {
             return;
         }
 
-        SpriteModel? sprite = tileSetModel.Sprites.Find((item) => item.ID == spriteID);
+        SpriteModel? sprite = tileSetModel.Sprites.Find((item) => item.ID == tileInfo.SpriteID);
 
         if (string.IsNullOrEmpty(sprite?.ID))
         {

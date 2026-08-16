@@ -14,12 +14,13 @@ public class Tile
     public byte PaletteIndex { get; set; }
     public Point TileSetOrigin { get; set; } = default;
     public string TileSetID { get; set; } = string.Empty;
+    public string BankID { get; set; } = string.Empty;
     public string MapID { get; init; } = string.Empty;
     public int CellIndex { get; init; }
 
     public bool IsEmpty()
     {
-        return (TileSetOrigin.X == 0 && TileSetOrigin.Y == 0) || string.IsNullOrEmpty(TileSetID);
+        return (TileSetOrigin.X == 0 && TileSetOrigin.Y == 0) && string.IsNullOrEmpty(TileSetID);
     }
 
     public void Clean()
