@@ -186,38 +186,38 @@ public sealed class BuildMapsFasmarm : Building<BuildMapsFasmarm>
         {
             if (model.BckgrRegularSize == BckgrRegularSize.Regular32x32)
             {
-                KeyValuePair<string, Tile[]> map = model.Tiles.ElementAt(0);
-                await WriteMapTiles(outputFile, map.Value);
+                RegularMap regularMap0 = model.RegularMap.ElementAt(0);
+                await WriteMapTiles(outputFile, regularMap0.Tiles);
             }
             else if (model.BckgrRegularSize == BckgrRegularSize.Regular32x64)
             {
-                KeyValuePair<string, Tile[]> map0 = model.Tiles.ElementAt(0);
-                await WriteMapTiles(outputFile, map0.Value);
+                RegularMap regularMap0 = model.RegularMap.ElementAt(0);
+                await WriteMapTiles(outputFile, regularMap0.Tiles);
 
-                KeyValuePair<string, Tile[]> map2 = model.Tiles.ElementAt(2);
-                await WriteMapTiles(outputFile, map2.Value);
+                RegularMap regularMap2 = model.RegularMap.ElementAt(2);
+                await WriteMapTiles(outputFile, regularMap2.Tiles);
             }
             else if (model.BckgrRegularSize == BckgrRegularSize.Regular64x32)
             {
-                KeyValuePair<string, Tile[]> map0 = model.Tiles.ElementAt(0);
-                await WriteMapTiles(outputFile, map0.Value);
+                RegularMap regularMap0 = model.RegularMap.ElementAt(0);
+                await WriteMapTiles(outputFile, regularMap0.Tiles);
 
-                KeyValuePair<string, Tile[]> map1 = model.Tiles.ElementAt(1);
-                await WriteMapTiles(outputFile, map1.Value);
+                RegularMap regularMap1 = model.RegularMap.ElementAt(1);
+                await WriteMapTiles(outputFile, regularMap1.Tiles);
             }
             else if (model.BckgrRegularSize == BckgrRegularSize.Regular64x64)
             {
-                KeyValuePair<string, Tile[]> map0 = model.Tiles.ElementAt(0);
-                await WriteMapTiles(outputFile, map0.Value);
+                RegularMap regularMap0 = model.RegularMap.ElementAt(0);
+                await WriteMapTiles(outputFile, regularMap0.Tiles);
 
-                KeyValuePair<string, Tile[]> map1 = model.Tiles.ElementAt(1);
-                await WriteMapTiles(outputFile, map1.Value);
+                RegularMap regularMap1 = model.RegularMap.ElementAt(1);
+                await WriteMapTiles(outputFile, regularMap1.Tiles);
 
-                KeyValuePair<string, Tile[]> map2 = model.Tiles.ElementAt(2);
-                await WriteMapTiles(outputFile, map2.Value);
+                RegularMap regularMap2 = model.RegularMap.ElementAt(2);
+                await WriteMapTiles(outputFile, regularMap2.Tiles);
 
-                KeyValuePair<string, Tile[]> map3 = model.Tiles.ElementAt(3);
-                await WriteMapTiles(outputFile, map3.Value);
+                RegularMap regularMap3 = model.RegularMap.ElementAt(3);
+                await WriteMapTiles(outputFile, regularMap3.Tiles);
             }
         }
         else

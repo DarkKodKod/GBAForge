@@ -350,6 +350,9 @@ namespace GBATool
         {
             if (item.IsRoot || item.IsFolder)
             {
+                tbMapSelect.IsChecked = true;
+                tbrMap.Visibility = Visibility.Collapsed;
+
                 return;
             }
 

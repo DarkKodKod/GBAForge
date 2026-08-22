@@ -683,7 +683,7 @@ public class MapViewModel : ItemViewModel
             return;
         }
 
-        if (model.Tiles.Count == 0)
+        if (model.RegularMap.Count == 0)
         {
             model.InsertNewTiles();
 
@@ -698,19 +698,19 @@ public class MapViewModel : ItemViewModel
         BckgrAffineSize = model.BckgrAffineSize;
 
         int mapIndex = 0;
-        foreach (KeyValuePair<string, Tile[]> map in model.Tiles)
+        foreach (RegularMap map in model.RegularMap)
         {
             switch (mapIndex)
             {
                 case 0:
                     {
                         int tileIndex = 0;
-                        foreach (Tile item in map.Value)
+                        foreach (Tile item in map.Tiles)
                         {
                             Tiles0.Add(new()
                             {
                                 Index = tileIndex++,
-                                MapID = map.Key,
+                                MapID = map.MapID,
                                 MapIndex = item.CellIndex
                             });
                         }
@@ -719,12 +719,12 @@ public class MapViewModel : ItemViewModel
                 case 1:
                     {
                         int tileIndex = 0;
-                        foreach (Tile item in map.Value)
+                        foreach (Tile item in map.Tiles)
                         {
                             Tiles1.Add(new()
                             {
                                 Index = tileIndex++,
-                                MapID = map.Key,
+                                MapID = map.MapID,
                                 MapIndex = item.CellIndex
                             });
                         }
@@ -733,12 +733,12 @@ public class MapViewModel : ItemViewModel
                 case 2:
                     {
                         int tileIndex = 0;
-                        foreach (Tile item in map.Value)
+                        foreach (Tile item in map.Tiles)
                         {
                             Tiles2.Add(new()
                             {
                                 Index = tileIndex++,
-                                MapID = map.Key,
+                                MapID = map.MapID,
                                 MapIndex = item.CellIndex
                             });
                         }
@@ -747,12 +747,12 @@ public class MapViewModel : ItemViewModel
                 case 3:
                     {
                         int tileIndex = 0;
-                        foreach (Tile item in map.Value)
+                        foreach (Tile item in map.Tiles)
                         {
                             Tiles3.Add(new()
                             {
                                 Index = tileIndex++,
-                                MapID = map.Key,
+                                MapID = map.MapID,
                                 MapIndex = item.CellIndex
                             });
                         }
@@ -786,6 +786,8 @@ public class MapViewModel : ItemViewModel
         }
 
         SelectBank(BankID);
+
+        LoadMapImage();
 
         _doNotSave = false;
     }
@@ -1091,7 +1093,8 @@ public class MapViewModel : ItemViewModel
 
         if (vO.OriginalSource is FrameworkElement fe)
         {
-            if (fe.Name != "mapCanvas")
+            if (fe.Name != "mapCanvas" &&
+                fe.Name != "imgMap")
             {
                 return;
             }
@@ -1134,7 +1137,8 @@ public class MapViewModel : ItemViewModel
 
         if (vO.OriginalSource is FrameworkElement fe)
         {
-            if (fe.Name != "mapCanvas")
+            if (fe.Name != "mapCanvas" &&
+                fe.Name != "imgMap")
             {
                 return;
             }
@@ -1250,6 +1254,8 @@ public class MapViewModel : ItemViewModel
         // Paint from the clicked tile
         if (clickedOnTile)
         {
+            // Starting from this tile, this will paint the entire selection of tiles from the bank
+
             VisualMapTileVO[,] array2DOfTiles = CurrentCursor.VisualMapTiles;
 
             for (int col = 0; col < array2DOfTiles.GetLength(0); col++)
@@ -1262,6 +1268,7 @@ public class MapViewModel : ItemViewModel
                     {
                         tiles[tileIndex].TileSetID = val.TileSetID;
                         tiles[tileIndex].TileSetOrigin = val.Point;
+                        tiles[tileIndex].BankID = CurrentCursor.BankID;
                     }
                 }
             }
@@ -1269,9 +1276,12 @@ public class MapViewModel : ItemViewModel
         else
         {
             // Paint the area with tiles
+            // This will fill the area using the selection of tiles from the bank
+            // Some tiles from this selection might not fit if the area is too small
+
         }
 
-        //        ProjectItem?.FileHandler?.Save();
+        ProjectItem?.FileHandler?.Save();
 
         LoadMapImage();
     }
@@ -1284,7 +1294,9 @@ public class MapViewModel : ItemViewModel
 
         if (model != null)
         {
-            mapBitmap = MapUtils.CreateMap(model);
+            RegularMap regularMap = model.RegularMap.First();
+
+            mapBitmap = MapUtils.GetFrameImageFromCache(model, regularMap.MapID);
         }
 
         MapImage = mapBitmap;
@@ -1308,14 +1320,15 @@ public class MapViewModel : ItemViewModel
             return;
         }
 
-        if (vO.OriginalSource is not Canvas and not Rectangle)
+        if (vO.OriginalSource is not Canvas and not Rectangle and not Image)
         {
             return;
         }
 
         if (vO.OriginalSource is FrameworkElement fe)
         {
-            if (fe.Name != "mapCanvas")
+            if (fe.Name != "mapCanvas" &&
+                fe.Name != "imgMap")
             {
                 return;
             }
@@ -1460,7 +1473,7 @@ public class MapViewModel : ItemViewModel
                 accumulativeWidth = MapUtils.CellSize;
             }
             else if (continuousIndex + 1 == tiles[i].Index &&
-                accumulativeWidth < MapUtils.MapSizeWidth * MapUtils.CellSize)
+                accumulativeWidth < MapUtils.RegularMapSizeWidth * MapUtils.CellSize)
             {
                 continuousIndex++;
 

@@ -681,14 +681,9 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
 
         using (cropped.GetBitmapContext())
         {
-            Image imageCtrl = new()
-            {
-                Source = cropped
-            };
-
             VisualMapTileVO[,] arrays = Util.ConvertListListInto2DArray(copyOfTilesRowVO);
 
-            SignalManager.Get<UseBitmapAsCursorSignal>().Dispatch(new(imageCtrl, _bankModel.GUID, arrays));
+            SignalManager.Get<UseBitmapAsCursorSignal>().Dispatch(new(cropped, _bankModel.GUID, arrays));
 
             if (ToolBarMapTool == MapFunctionality.Select)
             {

@@ -15,12 +15,14 @@ public class Tile
     public Point TileSetOrigin { get; set; } = default;
     public string TileSetID { get; set; } = string.Empty;
     public string BankID { get; set; } = string.Empty;
-    public string MapID { get; init; } = string.Empty;
     public int CellIndex { get; init; }
 
     public bool IsEmpty()
     {
-        return (TileSetOrigin.X == 0 && TileSetOrigin.Y == 0) && string.IsNullOrEmpty(TileSetID);
+        return TileSetOrigin.X == 0 &&
+            TileSetOrigin.Y == 0 &&
+            string.IsNullOrEmpty(TileSetID) &&
+            string.IsNullOrEmpty(BankID);
     }
 
     public void Clean()
@@ -28,6 +30,12 @@ public class Tile
         TileSetOrigin = default;
         TileSetID = string.Empty;
     }
+}
+
+public class RegularMap
+{
+    public string MapID { get; init; } = string.Empty;
+    public Tile[] Tiles { get; init; } = [];
 }
 
 public class MapModel : AFileModel
@@ -59,7 +67,7 @@ public class MapModel : AFileModel
     public Priority Priority { get; set; } = Priority.Highest;
     public BckgrRegularSize BckgrRegularSize { get; set; } = BckgrRegularSize.Regular32x32;
     public BckgrAffineSize BckgrAffineSize { get; set; } = BckgrAffineSize.Affine16x16;
-    public Dictionary<string, Tile[]> Tiles { get; set; } = [];
+    public List<RegularMap> RegularMap { get; set; } = [];
     public List<Tile> AffineTiles { get; set; } = [];
     public bool EnableMosaic { get; set; }
     public bool AffineWrapping { get; set; }
@@ -72,16 +80,18 @@ public class MapModel : AFileModel
     {
         for (int i = 0; i < 4; i++)
         {
-            string mapID = Guid.NewGuid().ToString();
-
             List<Tile> tiles = [];
 
             for (int j = 0; j < RegularTileMin; j++)
             {
-                tiles.Add(new Tile() { MapID = mapID, CellIndex = j });
+                tiles.Add(new() { CellIndex = j });
             }
 
-            Tiles.Add(mapID, [.. tiles]);
+            RegularMap.Add(new()
+            {
+                MapID = Guid.NewGuid().ToString(),
+                Tiles = [.. tiles]
+            });
         }
     }
 
@@ -91,11 +101,13 @@ public class MapModel : AFileModel
 
         foreach ((string mapID, int index) in indices)
         {
-            if (Tiles.TryGetValue(mapID, out Tile[]? tiles))
+            IEnumerable<Tile[]> tiles = from rm in RegularMap where rm.MapID == mapID select rm.Tiles;
+
+            foreach (Tile[] item in tiles)
             {
                 if (tiles != null && index >= 0 && index < RegularTileMin)
                 {
-                    listOfTiles.Add(tiles[index]);
+                    listOfTiles.Add(item[index]);
                 }
             }
         }

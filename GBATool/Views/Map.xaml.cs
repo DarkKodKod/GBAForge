@@ -73,7 +73,7 @@ namespace GBATool.Views
 
         private void OnUseBitmapAsCursor(MapPaintCursorVO vo)
         {
-            cursorImage.Source = vo.Image.Source;
+            cursorImage.Source = vo.Image;
         }
 
         private void OnTryCaptureMouse(string name)
@@ -114,20 +114,18 @@ namespace GBATool.Views
 
         private void MapCanvas_MouseMove(object sender, MouseEventArgs e)
         {
-            if (e.OriginalSource is not Canvas canvas)
-            {
-                return;
-            }
-
             if (cursorImage.Source == null)
             {
                 return;
             }
 
-            Point positionInCanvas = e.GetPosition(canvas);
+            if (e.OriginalSource is FrameworkElement parentControl && (parentControl is Canvas or Image))
+            {
+                Point positionInCanvas = e.GetPosition(parentControl);
 
-            Canvas.SetLeft(cursorImage, positionInCanvas.X);
-            Canvas.SetTop(cursorImage, positionInCanvas.Y);
+                Canvas.SetLeft(cursorImage, positionInCanvas.X);
+                Canvas.SetTop(cursorImage, positionInCanvas.Y);
+            }
         }
     }
 }
