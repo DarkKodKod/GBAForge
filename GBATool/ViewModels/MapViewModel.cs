@@ -1174,7 +1174,7 @@ public class MapViewModel : ItemViewModel
                 {
                     VisualMapTileVO val = array2DOfTiles[col, row];
 
-                    int tileIndex = selectedTiles[0].Index + ((col * MapUtils.RegularMapSizeWidth) + row);
+                    int tileIndex = selectedTiles[0].Index + (col * MapUtils.RegularMapSizeWidth) + row;
 
                     if (val != VisualMapTileVO.Empty)
                     {
