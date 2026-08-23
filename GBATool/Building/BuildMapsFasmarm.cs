@@ -136,9 +136,9 @@ public sealed class BuildMapsFasmarm : Building<BuildMapsFasmarm>
         {
             mapSize = model.BckgrRegularSize switch
             {
-                BckgrRegularSize.Regular64x64 => "1100000000000000b",
-                BckgrRegularSize.Regular32x64 => "1000000000000000b",
-                BckgrRegularSize.Regular64x32 => "0100000000000000b",
+                BckgrRegularSize.Big => "1100000000000000b",
+                BckgrRegularSize.Wide => "1000000000000000b",
+                BckgrRegularSize.Tall => "0100000000000000b",
                 _ => "0000000000000000b" // 32x32
             };
         }
@@ -184,40 +184,40 @@ public sealed class BuildMapsFasmarm : Building<BuildMapsFasmarm>
 
         if (model.MapType == MapType.Regular)
         {
-            if (model.BckgrRegularSize == BckgrRegularSize.Regular32x32)
+            if (model.BckgrRegularSize == BckgrRegularSize.Small)
             {
-                RegularMap regularMap0 = model.RegularMap.ElementAt(0);
-                await WriteMapTiles(outputFile, regularMap0.Tiles);
+                //                RegularMap regularMap0 = model.RegularMap.ElementAt(0);
+                //                await WriteMapTiles(outputFile, regularMap0.Tiles);
             }
-            else if (model.BckgrRegularSize == BckgrRegularSize.Regular32x64)
+            else if (model.BckgrRegularSize == BckgrRegularSize.Wide)
             {
-                RegularMap regularMap0 = model.RegularMap.ElementAt(0);
-                await WriteMapTiles(outputFile, regularMap0.Tiles);
+                //                RegularMap regularMap0 = model.RegularMap.ElementAt(0);
+                //                await WriteMapTiles(outputFile, regularMap0.Tiles);
 
-                RegularMap regularMap2 = model.RegularMap.ElementAt(2);
-                await WriteMapTiles(outputFile, regularMap2.Tiles);
+                //                RegularMap regularMap2 = model.RegularMap.ElementAt(2);
+                //                await WriteMapTiles(outputFile, regularMap2.Tiles);
             }
-            else if (model.BckgrRegularSize == BckgrRegularSize.Regular64x32)
+            else if (model.BckgrRegularSize == BckgrRegularSize.Tall)
             {
-                RegularMap regularMap0 = model.RegularMap.ElementAt(0);
-                await WriteMapTiles(outputFile, regularMap0.Tiles);
+                //                RegularMap regularMap0 = model.RegularMap.ElementAt(0);
+                //                await WriteMapTiles(outputFile, regularMap0.Tiles);
 
-                RegularMap regularMap1 = model.RegularMap.ElementAt(1);
-                await WriteMapTiles(outputFile, regularMap1.Tiles);
+                //                RegularMap regularMap1 = model.RegularMap.ElementAt(1);
+                //                await WriteMapTiles(outputFile, regularMap1.Tiles);
             }
-            else if (model.BckgrRegularSize == BckgrRegularSize.Regular64x64)
+            else if (model.BckgrRegularSize == BckgrRegularSize.Big)
             {
-                RegularMap regularMap0 = model.RegularMap.ElementAt(0);
-                await WriteMapTiles(outputFile, regularMap0.Tiles);
+                //                RegularMap regularMap0 = model.RegularMap.ElementAt(0);
+                //                await WriteMapTiles(outputFile, regularMap0.Tiles);
 
-                RegularMap regularMap1 = model.RegularMap.ElementAt(1);
-                await WriteMapTiles(outputFile, regularMap1.Tiles);
+                //                RegularMap regularMap1 = model.RegularMap.ElementAt(1);
+                //                await WriteMapTiles(outputFile, regularMap1.Tiles);
 
-                RegularMap regularMap2 = model.RegularMap.ElementAt(2);
-                await WriteMapTiles(outputFile, regularMap2.Tiles);
+                //                RegularMap regularMap2 = model.RegularMap.ElementAt(2);
+                //                await WriteMapTiles(outputFile, regularMap2.Tiles);
 
-                RegularMap regularMap3 = model.RegularMap.ElementAt(3);
-                await WriteMapTiles(outputFile, regularMap3.Tiles);
+                //                RegularMap regularMap3 = model.RegularMap.ElementAt(3);
+                //                await WriteMapTiles(outputFile, regularMap3.Tiles);
             }
         }
         else
@@ -231,7 +231,7 @@ public sealed class BuildMapsFasmarm : Building<BuildMapsFasmarm>
             };
 
             Tile[] tiles = new Tile[size];
-            Array.Copy(model.AffineTiles.ToArray(), tiles, size);
+            Array.Copy(model.AffineMapTiles.ToArray(), tiles, size);
             await WriteMapTiles(outputFile, tiles);
         }
 

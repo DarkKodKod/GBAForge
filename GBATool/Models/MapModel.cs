@@ -1,4 +1,5 @@
 ﻿using GBATool.Enums;
+using GBATool.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,12 +33,6 @@ public class Tile
     }
 }
 
-public class RegularMap
-{
-    public string MapID { get; init; } = string.Empty;
-    public Tile[] Tiles { get; init; } = [];
-}
-
 public class MapModel : AFileModel
 {
     private const string _extensionKey = "extensionMaps";
@@ -57,18 +52,21 @@ public class MapModel : AFileModel
     }
 
     [JsonIgnore]
-    public const int RegularTileMin = 32 * 32;
+    public const int RegularTileMinSize = MapUtils.RegularMapSizeWidth * MapUtils.RegularMapSizeWidth;
     [JsonIgnore]
-    public const int RegularTileMax = RegularTileMin * 4;
+    public const int NumberOfBackgrounds = 4;
     [JsonIgnore]
-    public const int AffineTileMax = RegularTileMax * 2;
+    public const int RegularTileMaxSize = RegularTileMinSize * NumberOfBackgrounds;
+    [JsonIgnore]
+    public const int AffineTileMaxSize = RegularTileMaxSize * 2;
 
+    public string MapID { get; private set; } = string.Empty;
     public MapType MapType { get; set; } = MapType.Regular;
     public Priority Priority { get; set; } = Priority.Highest;
-    public BckgrRegularSize BckgrRegularSize { get; set; } = BckgrRegularSize.Regular32x32;
+    public BckgrRegularSize BckgrRegularSize { get; set; } = BckgrRegularSize.Small;
     public BckgrAffineSize BckgrAffineSize { get; set; } = BckgrAffineSize.Affine16x16;
-    public List<RegularMap> RegularMap { get; set; } = [];
-    public List<Tile> AffineTiles { get; set; } = [];
+    public List<Tile> RegularMapTiles { get; set; } = [];
+    public List<Tile> AffineMapTiles { get; set; } = [];
     public bool EnableMosaic { get; set; }
     public bool AffineWrapping { get; set; }
     public string[] PaletteIDs { get; set; } = [.. Enumerable.Repeat(string.Empty, 16)];
@@ -76,42 +74,19 @@ public class MapModel : AFileModel
     public CharacterBaseBlock CharacterBaseBlock { get; set; } = CharacterBaseBlock.Block0;
     public string BankID { get; set; } = string.Empty;
 
-    public void InsertNewTiles()
+    public void CreateNewRegularMap()
     {
-        for (int i = 0; i < 4; i++)
+        MapID = Guid.NewGuid().ToString();
+
+        List<Tile> tiles = [];
+
+        int totalSizeOfFourBackgrounds = RegularTileMinSize * NumberOfBackgrounds;
+
+        for (int j = 0; j < totalSizeOfFourBackgrounds; j++)
         {
-            List<Tile> tiles = [];
-
-            for (int j = 0; j < RegularTileMin; j++)
-            {
-                tiles.Add(new() { CellIndex = j });
-            }
-
-            RegularMap.Add(new()
-            {
-                MapID = Guid.NewGuid().ToString(),
-                Tiles = [.. tiles]
-            });
-        }
-    }
-
-    public List<Tile> GetTilesFromRegularBackground(List<(string, int)> indices)
-    {
-        List<Tile> listOfTiles = [];
-
-        foreach ((string mapID, int index) in indices)
-        {
-            IEnumerable<Tile[]> tiles = from rm in RegularMap where rm.MapID == mapID select rm.Tiles;
-
-            foreach (Tile[] item in tiles)
-            {
-                if (tiles != null && index >= 0 && index < RegularTileMin)
-                {
-                    listOfTiles.Add(item[index]);
-                }
-            }
+            tiles.Add(new() { CellIndex = j });
         }
 
-        return listOfTiles;
+        RegularMapTiles = [.. tiles];
     }
 }

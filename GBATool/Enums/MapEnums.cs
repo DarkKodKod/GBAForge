@@ -8,10 +8,10 @@ public enum MapType
 
 public enum BckgrRegularSize
 {
-    Regular32x32 = 0,
-    Regular64x32 = 1,
-    Regular32x64 = 2,
-    Regular64x64 = 3
+    Small = 0, // 32x32
+    Wide = 1, // 64x32
+    Tall = 2, // 32x64
+    Big = 3 // 64x64
 }
 
 public enum BckgrAffineSize

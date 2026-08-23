@@ -57,8 +57,8 @@ public class BankImageMetaData
 
 public static class BankUtils
 {
-    public static readonly int SizeOfCellInPixels = 8;
-    public static readonly int MaxTextureCellsWidth = 32;
+    public const int SizeOfCellInPixels = 8;
+    public const int MaxTextureCellsWidth = 32;
 
     public static BankImageMetaData CreateImage(BankModel bankModel, bool foce2DView, int canvasWidth, int canvasHeight)
     {

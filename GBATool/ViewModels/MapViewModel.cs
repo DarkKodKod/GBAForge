@@ -35,7 +35,6 @@ public class TileObject : INotifyPropertyChanged
 
     public int Index { get; set; }
     public string MapID { get; set; } = string.Empty;
-    public int MapIndex { get; set; }
 
     public int PaletetteIndex
     {
@@ -118,12 +117,9 @@ public class MapViewModel : ItemViewModel
     private float _scale = 3.0f;
     private MapType _mapType = MapType.Regular;
     private Priority _priority = Priority.Highest;
-    private BckgrRegularSize _bckgrRegularSize = BckgrRegularSize.Regular32x32;
+    private BckgrRegularSize _bckgrRegularSize = BckgrRegularSize.Small;
     private BckgrAffineSize _bckgrAffineSize = BckgrAffineSize.Affine16x16;
-    private BindingList<TileObject> _tiles0 = [];
-    private BindingList<TileObject> _tiles1 = [];
-    private BindingList<TileObject> _tiles2 = [];
-    private BindingList<TileObject> _tiles3 = [];
+    private BindingList<TileObject> _tiles = [];
     private bool _enableMosaic;
     private bool _affineWrapping;
     private BindingList<BankIndex> _paletteIDs = [];
@@ -301,18 +297,18 @@ public class MapViewModel : ItemViewModel
             {
                 switch (BckgrRegularSize)
                 {
-                    case BckgrRegularSize.Regular64x32:
+                    case BckgrRegularSize.Wide:
                         CanvasHeight = 256;
                         CanvasWidth = 512;
                         break;
-                    case BckgrRegularSize.Regular32x64:
+                    case BckgrRegularSize.Tall:
                         CanvasWidth = 256;
                         CanvasHeight = 512;
                         break;
-                    case BckgrRegularSize.Regular64x64:
+                    case BckgrRegularSize.Big:
                         CanvasHeight = CanvasWidth = 512;
                         break;
-                    case BckgrRegularSize.Regular32x32:
+                    case BckgrRegularSize.Small:
                     default:
                         CanvasHeight = CanvasWidth = 256;
                         break;
@@ -449,47 +445,14 @@ public class MapViewModel : ItemViewModel
         }
     }
 
-    public BindingList<TileObject> Tiles0
+    public BindingList<TileObject> Tiles
     {
-        get => _tiles0;
+        get => _tiles;
         set
         {
-            _tiles0 = value;
+            _tiles = value;
 
-            OnPropertyChanged(nameof(Tiles0));
-        }
-    }
-
-    public BindingList<TileObject> Tiles1
-    {
-        get => _tiles1;
-        set
-        {
-            _tiles1 = value;
-
-            OnPropertyChanged(nameof(Tiles1));
-        }
-    }
-
-    public BindingList<TileObject> Tiles2
-    {
-        get => _tiles2;
-        set
-        {
-            _tiles2 = value;
-
-            OnPropertyChanged(nameof(Tiles2));
-        }
-    }
-
-    public BindingList<TileObject> Tiles3
-    {
-        get => _tiles3;
-        set
-        {
-            _tiles3 = value;
-
-            OnPropertyChanged(nameof(Tiles3));
+            OnPropertyChanged(nameof(Tiles));
         }
     }
 
@@ -637,7 +600,7 @@ public class MapViewModel : ItemViewModel
                 Name = "None",
                 Model = null
             },
-            .. ProjectFiles.GetModels<PaletteModel>(),
+            .. ProjectFiles.GetModels<PaletteModel>()
         ];
 
         Palettes = [.. list];
@@ -683,9 +646,9 @@ public class MapViewModel : ItemViewModel
             return;
         }
 
-        if (model.RegularMap.Count == 0)
+        if (model.RegularMapTiles.Count == 0)
         {
-            model.InsertNewTiles();
+            model.CreateNewRegularMap();
 
             ProjectItem?.FileHandler?.Save();
         }
@@ -697,71 +660,13 @@ public class MapViewModel : ItemViewModel
         BckgrRegularSize = model.BckgrRegularSize;
         BckgrAffineSize = model.BckgrAffineSize;
 
-        int mapIndex = 0;
-        foreach (RegularMap map in model.RegularMap)
+        foreach (Tile tile in model.RegularMapTiles)
         {
-            switch (mapIndex)
+            Tiles.Add(new()
             {
-                case 0:
-                    {
-                        int tileIndex = 0;
-                        foreach (Tile item in map.Tiles)
-                        {
-                            Tiles0.Add(new()
-                            {
-                                Index = tileIndex++,
-                                MapID = map.MapID,
-                                MapIndex = item.CellIndex
-                            });
-                        }
-                    }
-                    break;
-                case 1:
-                    {
-                        int tileIndex = 0;
-                        foreach (Tile item in map.Tiles)
-                        {
-                            Tiles1.Add(new()
-                            {
-                                Index = tileIndex++,
-                                MapID = map.MapID,
-                                MapIndex = item.CellIndex
-                            });
-                        }
-                    }
-                    break;
-                case 2:
-                    {
-                        int tileIndex = 0;
-                        foreach (Tile item in map.Tiles)
-                        {
-                            Tiles2.Add(new()
-                            {
-                                Index = tileIndex++,
-                                MapID = map.MapID,
-                                MapIndex = item.CellIndex
-                            });
-                        }
-                    }
-                    break;
-                case 3:
-                    {
-                        int tileIndex = 0;
-                        foreach (Tile item in map.Tiles)
-                        {
-                            Tiles3.Add(new()
-                            {
-                                Index = tileIndex++,
-                                MapID = map.MapID,
-                                MapIndex = item.CellIndex
-                            });
-                        }
-                    }
-                    break;
-                default: break;
-            }
-
-            mapIndex++;
+                Index = tile.CellIndex,
+                MapID = model.MapID
+            });
         }
 
         EnableMosaic = model.EnableMosaic;
@@ -1161,6 +1066,13 @@ public class MapViewModel : ItemViewModel
             return;
         }
 
+        MapModel? model = GetModel();
+
+        if (model == null)
+        {
+            return;
+        }
+
         SignalManager.Get<TryReleaseMouseSignal>().Dispatch(sourceName);
 
         Point pos = vO.MouseEvent.GetPosition(sender);
@@ -1183,7 +1095,7 @@ public class MapViewModel : ItemViewModel
         }
         else
         {
-            selectedTiles = [GetSelectedTile(pos)];
+            selectedTiles = [GetSelectedVisualTile(pos, model.BckgrRegularSize)];
             clickedOnTile = true;
         }
 
@@ -1247,9 +1159,7 @@ public class MapViewModel : ItemViewModel
         }
 
         // Get the list of tiles that are going to be modified
-        Tile[] tiles = [.. mapModel.GetTilesFromRegularBackground([.. selectedTiles.Select(t => (t.MapID, t.Index))])];
-
-        int tileIndex = 0;
+        Tile[] tiles = [.. mapModel.RegularMapTiles];
 
         // Paint from the clicked tile
         if (clickedOnTile)
@@ -1264,11 +1174,19 @@ public class MapViewModel : ItemViewModel
                 {
                     VisualMapTileVO val = array2DOfTiles[col, row];
 
+                    int tileIndex = selectedTiles[0].Index + ((col * MapUtils.RegularMapSizeWidth) + row);
+
                     if (val != VisualMapTileVO.Empty)
                     {
                         tiles[tileIndex].TileSetID = val.TileSetID;
                         tiles[tileIndex].TileSetOrigin = val.Point;
                         tiles[tileIndex].BankID = CurrentCursor.BankID;
+                    }
+                    else
+                    {
+                        tiles[tileIndex].TileSetID = string.Empty;
+                        tiles[tileIndex].TileSetOrigin = default;
+                        tiles[tileIndex].BankID = string.Empty;
                     }
                 }
             }
@@ -1294,9 +1212,7 @@ public class MapViewModel : ItemViewModel
 
         if (model != null)
         {
-            RegularMap regularMap = model.RegularMap.First();
-
-            mapBitmap = MapUtils.GetFrameImageFromCache(model, regularMap.MapID);
+            mapBitmap = MapUtils.GetFrameImageFromCache(model);
         }
 
         MapImage = mapBitmap;
@@ -1375,22 +1291,23 @@ public class MapViewModel : ItemViewModel
         }
     }
 
-    private TileObject GetSelectedTile(Point position)
+    private TileObject GetSelectedVisualTile(Point position, BckgrRegularSize size)
     {
-        (int mapIndex, int cellIndex) = MapUtils.GetCellIndexFromPoint(position);
+        int cellIndex = MapUtils.GetCellIndexFromPoint(position, size);
 
-        return mapIndex switch
-        {
-            3 => Tiles3[cellIndex],
-            2 => Tiles2[cellIndex],
-            1 => Tiles1[cellIndex],
-            0 or _ => Tiles0[cellIndex]
-        };
+        return Tiles[cellIndex];
     }
 
     private List<TileObject> CheckMouseAreaSelected()
     {
         List<TileObject> tiles = [];
+
+        MapModel? model = GetModel();
+
+        if (model == null)
+        {
+            return tiles;
+        }
 
         if (MouseSelectionWidth == 0 ||
             MouseSelectionHeight == 0)
@@ -1406,13 +1323,13 @@ public class MapViewModel : ItemViewModel
             MouseSelectionWidth,
             MouseSelectionHeight);
 
-        List<int> tilesInRect = MapUtils.GetCellsIndicesFromRect(rectangle);
+        List<int> tilesInRect = MapUtils.GetCellsIndicesFromRect(rectangle, model.BckgrRegularSize);
 
         if (tilesInRect.Count > 0)
         {
             foreach (int cellIndex in tilesInRect)
             {
-                tiles.Add(Tiles0[cellIndex]);
+                tiles.Add(Tiles[cellIndex]);
             }
         }
 
@@ -1501,7 +1418,7 @@ public class MapViewModel : ItemViewModel
 
         SelectedTiles = [.. selectedTiles];
 
-        Point origin = MapUtils.GetCellPointFromIndex(tiles[0].Index, tiles[0].MapIndex);
+        Point origin = MapUtils.GetCellPointFromIndex(tiles[0].Index);
 
         TilesSelectedActive = Visibility.Visible;
         TilesSelectedWidth = width;
