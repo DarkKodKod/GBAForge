@@ -1195,8 +1195,12 @@ public class MapViewModel : ItemViewModel
         {
             // Paint the area with tiles
             // This will fill the area using the selection of tiles from the bank
-            // Some tiles from this selection might not fit if the area is too small
+            // Some tiles from this selection might not fit if the area if is too small
 
+            foreach (TileObject tileObject in selectedTiles)
+            {
+
+            }
         }
 
         ProjectItem?.FileHandler?.Save();
