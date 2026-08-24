@@ -27,12 +27,18 @@ public static class MapUtils
         double endPointX = rect.Right;
         double endPointY = rect.Bottom;
 
+        int maxSize = size switch
+        {
+            BckgrRegularSize.Small => RegularMapSizeWidth * RegularMapSizeWidth,
+            _ => 0,
+        };
+
         bool canContinue = true;
         while (canContinue)
         {
             int cellIndex = GetCellIndexFromPoint(new Point(pointX, pointY), size);
 
-            if (cellIndex >= CellSize * RegularMapSizeWidth * (MapModel.NumberOfBackgrounds / 2))
+            if (cellIndex >= CellSize * maxSize)
             {
                 break;
             }

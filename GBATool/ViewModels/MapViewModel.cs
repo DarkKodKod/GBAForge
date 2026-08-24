@@ -33,8 +33,8 @@ public class TileObject : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propname));
     }
 
-    public int Index { get; set; }
-    public string MapID { get; set; } = string.Empty;
+    public int Index { get; init; }
+    public string MapID { get; init; } = string.Empty;
 
     public int PaletetteIndex
     {
@@ -1197,9 +1197,13 @@ public class MapViewModel : ItemViewModel
             // This will fill the area using the selection of tiles from the bank
             // Some tiles from this selection might not fit if the area if is too small
 
+            VisualMapTileVO[,] array2DOfTiles = CurrentCursor.VisualMapTiles;
+
             foreach (TileObject tileObject in selectedTiles)
             {
-
+                tiles[tileObject.Index].TileSetID = array2DOfTiles[0,0].TileSetID;
+                tiles[tileObject.Index].TileSetOrigin = array2DOfTiles[0, 0].Point;
+                tiles[tileObject.Index].BankID = CurrentCursor.BankID;
             }
         }
 
