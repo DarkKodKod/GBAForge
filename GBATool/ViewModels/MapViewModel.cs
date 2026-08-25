@@ -1111,8 +1111,10 @@ public class MapViewModel : ItemViewModel
                 PaintTiles(pos, selectedTiles, clickedOnTile);
                 break;
             case MapFunctionality.BucketPaint:
+                BucketPaint(pos, selectedTiles);
                 break;
             case MapFunctionality.Erase:
+                EraseTiles(pos, selectedTiles);
                 break;
         }
 
@@ -1168,13 +1170,13 @@ public class MapViewModel : ItemViewModel
 
             VisualMapTileVO[,] array2DOfTiles = CurrentCursor.VisualMapTiles;
 
-            for (int col = 0; col < array2DOfTiles.GetLength(0); col++)
+            for (int row = 0; row < array2DOfTiles.GetLength(0); row++)
             {
-                for (int row = 0; row < array2DOfTiles.GetLength(1); row++)
+                for (int col = 0; col < array2DOfTiles.GetLength(1); col++)
                 {
-                    VisualMapTileVO val = array2DOfTiles[col, row];
+                    VisualMapTileVO val = array2DOfTiles[row, col];
 
-                    int tileIndex = selectedTiles[0].Index + (col * MapUtils.RegularMapSizeWidth) + row;
+                    int tileIndex = selectedTiles[0].Index + (row * MapUtils.RegularMapSizeWidth) + col;
 
                     if (val != VisualMapTileVO.Empty)
                     {
@@ -1199,11 +1201,50 @@ public class MapViewModel : ItemViewModel
 
             VisualMapTileVO[,] array2DOfTiles = CurrentCursor.VisualMapTiles;
 
+            int cursorRowsCount = array2DOfTiles.GetLength(0);
+            int cursorColsCount = array2DOfTiles.GetLength(1);
+            int cursorColIndex = 0;
+            int cursorRowIndex = 0;
+            int previousIndex = -1;
+            int currentIndex = 0;
+
             foreach (TileObject tileObject in selectedTiles)
             {
-                tiles[tileObject.Index].TileSetID = array2DOfTiles[0,0].TileSetID;
-                tiles[tileObject.Index].TileSetOrigin = array2DOfTiles[0, 0].Point;
-                tiles[tileObject.Index].BankID = CurrentCursor.BankID;
+                currentIndex = tileObject.Index;
+
+                bool contiguousTile = true;
+
+                if (previousIndex > 0 && 
+                    currentIndex != previousIndex+1)
+                {
+                    contiguousTile = false;
+                }
+
+                if (cursorColIndex == cursorColsCount)
+                {
+                    cursorColIndex = 0;
+                }
+
+                if (!contiguousTile)
+                {
+                    cursorRowIndex++;
+                    cursorColIndex = 0;
+
+                    if (cursorRowIndex == cursorRowsCount)
+                    {
+                        cursorRowIndex = 0;
+                    }
+                }
+
+                previousIndex = currentIndex;
+
+                VisualMapTileVO val = array2DOfTiles[cursorRowIndex, cursorColIndex];
+
+                tiles[currentIndex].TileSetID = val.TileSetID;
+                tiles[currentIndex].TileSetOrigin = val.Point;
+                tiles[currentIndex].BankID = CurrentCursor.BankID;
+
+                cursorColIndex++;
             }
         }
 
@@ -1228,8 +1269,81 @@ public class MapViewModel : ItemViewModel
 
     private void SelectTiles(Point pos, List<TileObject> selectedTiles)
     {
+        MapModel? mapModel = GetModel();
+
+        if (mapModel == null)
+        {
+            return;
+        }
+
+        if (selectedTiles.Count == 0)
+        {
+            return;
+        }
+
         SignalManager.Get<ResetSelectionAreaSignal>().Dispatch(pos);
         SignalManager.Get<SelectTilesSignal>().Dispatch([.. selectedTiles]);
+    }
+
+    private void BucketPaint(Point pos, List<TileObject> selectedTiles)
+    {
+        SignalManager.Get<ResetSelectionAreaSignal>().Dispatch(pos);
+
+        MapModel? mapModel = GetModel();
+
+        if (mapModel == null)
+        {
+            return;
+        }
+
+        if (selectedTiles.Count == 0)
+        {
+            return;
+        }
+    }
+
+    private void EraseTiles(Point pos, List<TileObject> selectedTiles)
+    {
+        SignalManager.Get<ResetSelectionAreaSignal>().Dispatch(pos);
+
+        MapModel? mapModel = GetModel();
+
+        if (mapModel == null)
+        {
+            return;
+        }
+
+        if (selectedTiles.Count == 0)
+        {
+            return;
+        }
+
+        // Invalidate map cache if there is going to be a change on it
+
+        List<string> mapIDs = [];
+
+        foreach (TileObject tile in selectedTiles)
+        {
+            if (!mapIDs.Contains(tile.MapID))
+            {
+                MapUtils.InvalidateImageFromCache(tile.MapID);
+                mapIDs.Add(tile.MapID);
+            }
+        }
+
+        // Get the list of tiles that are going to be modified
+        Tile[] tiles = [.. mapModel.RegularMapTiles];
+
+        foreach (TileObject tileObject in selectedTiles)
+        {
+            tiles[tileObject.Index].TileSetID = string.Empty;
+            tiles[tileObject.Index].TileSetOrigin = default;
+            tiles[tileObject.Index].BankID = string.Empty;
+        }
+
+        ProjectItem?.FileHandler?.Save();
+
+        LoadMapImage();
     }
 
     private void OnMouseDownEvent(MouseButtonVO vO)
