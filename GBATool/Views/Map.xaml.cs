@@ -1,4 +1,5 @@
 ﻿using ArchitectureLibrary.Signals;
+using GBATool.Enums;
 using GBATool.Signals;
 using GBATool.Utils;
 using GBATool.VOs;
@@ -13,6 +14,8 @@ namespace GBATool.Views
     /// </summary>
     public partial class Map : UserControl, ICleanable
     {
+        private MapFunctionality _currentMapFunctionality = MapFunctionality.Select;
+
         public Map()
         {
             InitializeComponent();
@@ -21,6 +24,11 @@ namespace GBATool.Views
             SignalManager.Get<TryCaptureMouseSignal>().Listener += OnTryCaptureMouse;
             SignalManager.Get<TryReleaseMouseSignal>().Listener += OnTryReleaseMouse;
             SignalManager.Get<UseBitmapAsCursorSignal>().Listener += OnUseBitmapAsCursor;
+            SignalManager.Get<CheckMapBucketToolSignal>().Listener += OnCheckMapBucketTool;
+            SignalManager.Get<CheckMapSelectToolSignal>().Listener += OnCheckMapSelectTool;
+            SignalManager.Get<CheckMapEraseToolSignal>().Listener += OnCheckMapEraseTool;
+            SignalManager.Get<CheckMapPaintToolSignal>().Listener += OnCheckMapPaintTool;
+            SignalManager.Get<CheckMapMoveToolSignal>().Listener += OnCheckMapMoveTool;
             #endregion
 
             bankViewer.OnActivate();
@@ -68,7 +76,42 @@ namespace GBATool.Views
             SignalManager.Get<TryCaptureMouseSignal>().Listener -= OnTryCaptureMouse;
             SignalManager.Get<TryReleaseMouseSignal>().Listener -= OnTryReleaseMouse;
             SignalManager.Get<UseBitmapAsCursorSignal>().Listener -= OnUseBitmapAsCursor;
+            SignalManager.Get<CheckMapBucketToolSignal>().Listener -= OnCheckMapBucketTool;
+            SignalManager.Get<CheckMapSelectToolSignal>().Listener -= OnCheckMapSelectTool;
+            SignalManager.Get<CheckMapEraseToolSignal>().Listener -= OnCheckMapEraseTool;
+            SignalManager.Get<CheckMapPaintToolSignal>().Listener -= OnCheckMapPaintTool;
+            SignalManager.Get<CheckMapMoveToolSignal>().Listener -= OnCheckMapMoveTool;
             #endregion
+        }
+
+        private void OnCheckMapBucketTool()
+        {
+            cursorImage.Visibility = Visibility.Visible;
+            _currentMapFunctionality = MapFunctionality.BucketPaint;
+        }
+
+        private void OnCheckMapSelectTool()
+        {
+            cursorImage.Visibility = Visibility.Collapsed;
+            _currentMapFunctionality = MapFunctionality.Select;
+        }
+
+        private void OnCheckMapEraseTool()
+        {
+            cursorImage.Visibility = Visibility.Collapsed;
+            _currentMapFunctionality = MapFunctionality.Erase;
+        }
+
+        private void OnCheckMapPaintTool()
+        {
+            cursorImage.Visibility = Visibility.Visible;
+            _currentMapFunctionality = MapFunctionality.Paint;
+        }
+
+        private void OnCheckMapMoveTool()
+        {
+            cursorImage.Visibility = Visibility.Collapsed;
+            _currentMapFunctionality = MapFunctionality.Move;
         }
 
         private void OnUseBitmapAsCursor(MapPaintCursorVO vo)
@@ -104,7 +147,11 @@ namespace GBATool.Views
 
         private void MapCanvas_MouseEnter(object sender, MouseEventArgs e)
         {
-            cursorImage.Visibility = Visibility.Visible;
+            cursorImage.Visibility = _currentMapFunctionality switch
+            {
+                MapFunctionality.Select or MapFunctionality.Erase or MapFunctionality.Move => Visibility.Collapsed,
+                _ => Visibility.Visible
+            };
         }
 
         private void MapCanvas_MouseLeave(object sender, MouseEventArgs e)

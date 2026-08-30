@@ -1106,6 +1106,7 @@ public class MapViewModel : ItemViewModel
                 SelectTiles(pos, selectedTiles);
                 break;
             case MapFunctionality.Move:
+                MoveTiles(pos, selectedTiles);
                 break;
             case MapFunctionality.Paint:
                 PaintTiles(pos, selectedTiles, clickedOnTile);
@@ -1283,6 +1284,23 @@ public class MapViewModel : ItemViewModel
 
         SignalManager.Get<ResetSelectionAreaSignal>().Dispatch(pos);
         SignalManager.Get<SelectTilesSignal>().Dispatch([.. selectedTiles]);
+    }
+
+    private void MoveTiles(Point pos, List<TileObject> selectedTiles)
+    {
+        SignalManager.Get<ResetSelectionAreaSignal>().Dispatch(pos);
+
+        MapModel? mapModel = GetModel();
+
+        if (mapModel == null)
+        {
+            return;
+        }
+
+        if (selectedTiles.Count == 0)
+        {
+            return;
+        }
     }
 
     private void BucketPaint(Point pos, List<TileObject> selectedTiles)

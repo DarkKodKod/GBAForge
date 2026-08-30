@@ -110,25 +110,15 @@ public static class MapUtils
         return sourceBitmap;
     }
 
-    private static WriteableBitmap? CreateMap(MapModel model, bool createNew = true)
+    private static WriteableBitmap CreateMap(MapModel model)
     {
-        WriteableBitmap? mapBitmap = null;
-
-        if (createNew)
+        int matrixSize = model.BckgrRegularSize switch
         {
-            int matrixSize = model.BckgrRegularSize switch
-            {
-                BckgrRegularSize.Small => RegularMapSizeInPixels,
-                _ => 0
-            };
+            BckgrRegularSize.Small => RegularMapSizeInPixels,
+            _ => 0
+        };
 
-            mapBitmap = BitmapFactory.New(matrixSize, matrixSize);
-        }
-
-        if (mapBitmap == null)
-        {
-            return null;
-        }
+        WriteableBitmap mapBitmap = BitmapFactory.New(matrixSize, matrixSize);
 
         using (mapBitmap.GetBitmapContext())
         {
