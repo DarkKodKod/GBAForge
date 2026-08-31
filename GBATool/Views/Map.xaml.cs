@@ -121,7 +121,8 @@ namespace GBATool.Views
 
         private void OnTryCaptureMouse(string name)
         {
-            if (name != mapCanvas.Name)
+            if (name != mapCanvas.Name &&
+                name != imgMap.Name)
             {
                 return;
             }
@@ -134,7 +135,8 @@ namespace GBATool.Views
 
         private void OnTryReleaseMouse(string name)
         {
-            if (name != mapCanvas.Name)
+            if (name != mapCanvas.Name &&
+                name != imgMap.Name)
             {
                 return;
             }

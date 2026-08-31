@@ -1,8 +1,10 @@
-﻿using ArchitectureLibrary.Signals;
+﻿using ArchitectureLibrary.History.Signals;
+using ArchitectureLibrary.Signals;
 using GBATool.Commands.Banks;
 using GBATool.Commands.Input;
 using GBATool.Enums;
 using GBATool.FileSystem;
+using GBATool.HistoryActions;
 using GBATool.Models;
 using GBATool.Signals;
 using GBATool.Utils;
@@ -637,6 +639,9 @@ public class MapViewModel : ItemViewModel
         SignalManager.Get<CheckMapPaintToolSignal>().Listener += OnCheckMapPaintTool;
         SignalManager.Get<CheckMapMoveToolSignal>().Listener += OnCheckMapMoveTool;
         SignalManager.Get<UseBitmapAsCursorSignal>().Listener += OnUseBitmapAsCursor;
+        SignalManager.Get<DeleteMapTilesSignal>().Listener += OnDeleteMapTiles;
+        SignalManager.Get<InvalidateMapCacheSignal>().Listener += OnInvalidateMapCache;
+        SignalManager.Get<PaintMapTilesSignal>().Listener += OnPaintMapTiles;
         #endregion
 
         MapModel? model = GetModel();
@@ -716,6 +721,9 @@ public class MapViewModel : ItemViewModel
         SignalManager.Get<CheckMapPaintToolSignal>().Listener -= OnCheckMapPaintTool;
         SignalManager.Get<CheckMapMoveToolSignal>().Listener -= OnCheckMapMoveTool;
         SignalManager.Get<UseBitmapAsCursorSignal>().Listener -= OnUseBitmapAsCursor;
+        SignalManager.Get<DeleteMapTilesSignal>().Listener -= OnDeleteMapTiles;
+        SignalManager.Get<InvalidateMapCacheSignal>().Listener -= OnInvalidateMapCache;
+        SignalManager.Get<PaintMapTilesSignal>().Listener -= OnPaintMapTiles;
         #endregion
 
         base.OnDeactivate();
@@ -1268,15 +1276,8 @@ public class MapViewModel : ItemViewModel
         MapImage = mapBitmap;
     }
 
-    private void SelectTiles(Point pos, List<TileObject> selectedTiles)
+    private static void SelectTiles(Point pos, List<TileObject> selectedTiles)
     {
-        MapModel? mapModel = GetModel();
-
-        if (mapModel == null)
-        {
-            return;
-        }
-
         if (selectedTiles.Count == 0)
         {
             return;
@@ -1286,16 +1287,9 @@ public class MapViewModel : ItemViewModel
         SignalManager.Get<SelectTilesSignal>().Dispatch([.. selectedTiles]);
     }
 
-    private void MoveTiles(Point pos, List<TileObject> selectedTiles)
+    private static void MoveTiles(Point pos, List<TileObject> selectedTiles)
     {
         SignalManager.Get<ResetSelectionAreaSignal>().Dispatch(pos);
-
-        MapModel? mapModel = GetModel();
-
-        if (mapModel == null)
-        {
-            return;
-        }
 
         if (selectedTiles.Count == 0)
         {
@@ -1303,16 +1297,9 @@ public class MapViewModel : ItemViewModel
         }
     }
 
-    private void BucketPaint(Point pos, List<TileObject> selectedTiles)
+    private static void BucketPaint(Point pos, List<TileObject> selectedTiles)
     {
         SignalManager.Get<ResetSelectionAreaSignal>().Dispatch(pos);
-
-        MapModel? mapModel = GetModel();
-
-        if (mapModel == null)
-        {
-            return;
-        }
 
         if (selectedTiles.Count == 0)
         {
@@ -1324,14 +1311,14 @@ public class MapViewModel : ItemViewModel
     {
         SignalManager.Get<ResetSelectionAreaSignal>().Dispatch(pos);
 
-        MapModel? mapModel = GetModel();
-
-        if (mapModel == null)
+        if (selectedTiles.Count == 0)
         {
             return;
         }
 
-        if (selectedTiles.Count == 0)
+        MapModel? mapModel = GetModel();
+
+        if (mapModel == null)
         {
             return;
         }
@@ -1344,9 +1331,54 @@ public class MapViewModel : ItemViewModel
         {
             if (!mapIDs.Contains(tile.MapID))
             {
-                MapUtils.InvalidateImageFromCache(tile.MapID);
                 mapIDs.Add(tile.MapID);
             }
+        }
+
+        SignalManager.Get<InvalidateMapCacheSignal>().Dispatch(mapIDs);
+        SignalManager.Get<RegisterHistoryActionSignal>().Dispatch(new DeleteMapTilesHitoryAction(mapModel, selectedTiles, mapIDs));
+        SignalManager.Get<DeleteMapTilesSignal>().Dispatch(selectedTiles);
+    }
+
+    private void OnInvalidateMapCache(List<string> mapIDs)
+    {
+        foreach (string mapID in mapIDs)
+        {
+            MapUtils.InvalidateImageFromCache(mapID);
+        }
+    }
+
+    private void OnPaintMapTiles(List<Tile> tilesToPaint)
+    {
+        MapModel? mapModel = GetModel();
+
+        if (mapModel == null)
+        {
+            return;
+        }
+
+        // Get the list of tiles that are going to be modified
+        Tile[] tiles = [.. mapModel.RegularMapTiles];
+
+        foreach (Tile tile in tilesToPaint)
+        {
+            tiles[tile.CellIndex].TileSetID = tile.TileSetID;
+            tiles[tile.CellIndex].TileSetOrigin = tile.TileSetOrigin;
+            tiles[tile.CellIndex].BankID = tile.BankID;
+        }
+
+        ProjectItem?.FileHandler?.Save();
+
+        LoadMapImage();
+    }
+
+    private void OnDeleteMapTiles(List<TileObject> selectedTiles)
+    {
+        MapModel? mapModel = GetModel();
+
+        if (mapModel == null)
+        {
+            return;
         }
 
         // Get the list of tiles that are going to be modified
