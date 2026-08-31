@@ -84,33 +84,74 @@ namespace GBATool.Views
             #endregion
         }
 
+        private static bool MouseWithinBounds(FrameworkElement control, System.Drawing.Point mousePosition)
+        {
+            Point controlXY = control.TransformToAncestor(Application.Current.MainWindow).Transform(new(0, 0));
+
+            System.Drawing.Rectangle controlRect = new(
+                (int)controlXY.X,
+                (int)controlXY.Y,
+                (int)control.ActualWidth,
+                (int)control.ActualHeight);
+            return controlRect.Contains(mousePosition);
+        }
+
+        private bool IsMouseInMapBounds()
+        {
+            Point mousePos = Mouse.GetPosition(Application.Current.MainWindow);
+
+            System.Drawing.Point mousePosition = new((int)mousePos.X, (int)mousePos.Y);
+
+            return MouseWithinBounds(mapCanvas, mousePosition);
+        }
+
         private void OnCheckMapBucketTool()
         {
-            cursorImage.Visibility = Visibility.Visible;
+            if (IsMouseInMapBounds())
+            {
+                cursorImage.Visibility = Visibility.Visible;
+            }
+
             _currentMapFunctionality = MapFunctionality.BucketPaint;
         }
 
         private void OnCheckMapSelectTool()
         {
-            cursorImage.Visibility = Visibility.Collapsed;
+            if (IsMouseInMapBounds())
+            {
+                cursorImage.Visibility = Visibility.Collapsed;
+            }
+
             _currentMapFunctionality = MapFunctionality.Select;
         }
 
         private void OnCheckMapEraseTool()
         {
-            cursorImage.Visibility = Visibility.Collapsed;
+            if (IsMouseInMapBounds())
+            {
+                cursorImage.Visibility = Visibility.Collapsed;
+            }
+
             _currentMapFunctionality = MapFunctionality.Erase;
         }
 
         private void OnCheckMapPaintTool()
         {
-            cursorImage.Visibility = Visibility.Visible;
+            if (IsMouseInMapBounds())
+            {
+                cursorImage.Visibility = Visibility.Visible;
+            }
+
             _currentMapFunctionality = MapFunctionality.Paint;
         }
 
         private void OnCheckMapMoveTool()
         {
-            cursorImage.Visibility = Visibility.Collapsed;
+            if (IsMouseInMapBounds())
+            {
+                cursorImage.Visibility = Visibility.Collapsed;
+            }
+
             _currentMapFunctionality = MapFunctionality.Move;
         }
 
