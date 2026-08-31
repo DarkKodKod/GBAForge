@@ -1139,13 +1139,6 @@ public class MapViewModel : ItemViewModel
     {
         SignalManager.Get<ResetSelectionAreaSignal>().Dispatch(pos);
 
-        MapModel? mapModel = GetModel();
-
-        if (mapModel == null)
-        {
-            return;
-        }
-
         if (selectedTiles.Count == 0)
         {
             return;
@@ -1169,8 +1162,7 @@ public class MapViewModel : ItemViewModel
             }
         }
 
-        // Get the list of tiles that are going to be modified
-        Tile[] tiles = [.. mapModel.RegularMapTiles];
+        List<Tile> paintingTiles = [];
 
         // Paint from the clicked tile
         if (clickedOnTile)
@@ -1189,15 +1181,23 @@ public class MapViewModel : ItemViewModel
 
                     if (val != VisualMapTileVO.Empty)
                     {
-                        tiles[tileIndex].TileSetID = val.TileSetID;
-                        tiles[tileIndex].TileSetOrigin = val.Point;
-                        tiles[tileIndex].BankID = CurrentCursor.BankID;
+                        paintingTiles.Add(new()
+                        {
+                            CellIndex = tileIndex,
+                            BankID = CurrentCursor.BankID,
+                            TileSetID = val.TileSetID,
+                            TileSetOrigin = val.Point
+                        });
                     }
                     else
                     {
-                        tiles[tileIndex].TileSetID = string.Empty;
-                        tiles[tileIndex].TileSetOrigin = default;
-                        tiles[tileIndex].BankID = string.Empty;
+                        paintingTiles.Add(new()
+                        {
+                            CellIndex = tileIndex,
+                            BankID = string.Empty,
+                            TileSetID = string.Empty,
+                            TileSetOrigin = default
+                        });
                     }
                 }
             }
@@ -1223,8 +1223,8 @@ public class MapViewModel : ItemViewModel
 
                 bool contiguousTile = true;
 
-                if (previousIndex > 0 && 
-                    currentIndex != previousIndex+1)
+                if (previousIndex > 0 &&
+                    currentIndex != previousIndex + 1)
                 {
                     contiguousTile = false;
                 }
@@ -1249,17 +1249,22 @@ public class MapViewModel : ItemViewModel
 
                 VisualMapTileVO val = array2DOfTiles[cursorRowIndex, cursorColIndex];
 
-                tiles[currentIndex].TileSetID = val.TileSetID;
-                tiles[currentIndex].TileSetOrigin = val.Point;
-                tiles[currentIndex].BankID = CurrentCursor.BankID;
+                paintingTiles.Add(new()
+                {
+                    CellIndex = currentIndex,
+                    BankID = CurrentCursor.BankID,
+                    TileSetID = val.TileSetID,
+                    TileSetOrigin = val.Point
+                });
 
                 cursorColIndex++;
             }
         }
 
-        ProjectItem?.FileHandler?.Save();
-
-        LoadMapImage();
+        if (paintingTiles.Count > 0)
+        {
+            SignalManager.Get<PaintMapTilesSignal>().Dispatch(paintingTiles);
+        }
     }
 
     private void LoadMapImage()

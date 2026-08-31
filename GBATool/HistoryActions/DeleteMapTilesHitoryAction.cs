@@ -3,9 +3,7 @@ using ArchitectureLibrary.Signals;
 using GBATool.Models;
 using GBATool.Signals;
 using GBATool.ViewModels;
-using GBATool.Views;
 using System.Collections.Generic;
-using System.Windows;
 
 namespace GBATool.HistoryActions;
 
@@ -29,7 +27,7 @@ public class DeleteMapTilesHitoryAction : IHistoryAction
 
         foreach (TileObject tileObject in selectedTiles)
         {
-            _originalTiles.Add(new Tile()
+            _originalTiles.Add(new()
             {
                 CellIndex = tileObject.Index,
                 BankID = tiles[tileObject.Index].BankID,
