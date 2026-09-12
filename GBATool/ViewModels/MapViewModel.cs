@@ -1340,57 +1340,57 @@ public class MapViewModel : ItemViewModel
         {
             // Start from the clicked tile
 
-//            VisualMapTileVO[,] array2DOfTiles = CurrentCursor.VisualMapTiles;
-//
-//            int cursorRowsCount = array2DOfTiles.GetLength(0);
-//            int cursorColsCount = array2DOfTiles.GetLength(1);
-//            int cursorColIndex = 0;
-//            int cursorRowIndex = 0;
-//            int previousIndex = -1;
-//            int currentIndex = 0;
-//
-//            foreach (TileObject tileObject in selectedTiles)
-//            {
-//                currentIndex = tileObject.Index;
-//
-//                bool contiguousTile = true;
-//
-//                if (previousIndex > 0 &&
-//                    currentIndex != previousIndex + 1)
-//                {
-//                    contiguousTile = false;
-//                }
-//
-//                if (cursorColIndex == cursorColsCount)
-//                {
-//                    cursorColIndex = 0;
-//                }
-//
-//                if (!contiguousTile)
-//                {
-//                    cursorRowIndex++;
-//                    cursorColIndex = 0;
-//
-//                    if (cursorRowIndex == cursorRowsCount)
-//                    {
-//                        cursorRowIndex = 0;
-//                    }
-//                }
-//
-//                previousIndex = currentIndex;
-//
-//                VisualMapTileVO val = array2DOfTiles[cursorRowIndex, cursorColIndex];
-//
-//                paintingTiles.Add(new()
-//                {
-//                    CellIndex = currentIndex,
-//                    BankID = CurrentCursor.BankID,
-//                    TileSetID = val.TileSetID,
-//                    TileSetOrigin = val.Point
-//                });
-//
-//                cursorColIndex++;
-//            }
+            //            VisualMapTileVO[,] array2DOfTiles = CurrentCursor.VisualMapTiles;
+            //
+            //            int cursorRowsCount = array2DOfTiles.GetLength(0);
+            //            int cursorColsCount = array2DOfTiles.GetLength(1);
+            //            int cursorColIndex = 0;
+            //            int cursorRowIndex = 0;
+            //            int previousIndex = -1;
+            //            int currentIndex = 0;
+            //
+            //            foreach (TileObject tileObject in selectedTiles)
+            //            {
+            //                currentIndex = tileObject.Index;
+            //
+            //                bool contiguousTile = true;
+            //
+            //                if (previousIndex > 0 &&
+            //                    currentIndex != previousIndex + 1)
+            //                {
+            //                    contiguousTile = false;
+            //                }
+            //
+            //                if (cursorColIndex == cursorColsCount)
+            //                {
+            //                    cursorColIndex = 0;
+            //                }
+            //
+            //                if (!contiguousTile)
+            //                {
+            //                    cursorRowIndex++;
+            //                    cursorColIndex = 0;
+            //
+            //                    if (cursorRowIndex == cursorRowsCount)
+            //                    {
+            //                        cursorRowIndex = 0;
+            //                    }
+            //                }
+            //
+            //                previousIndex = currentIndex;
+            //
+            //                VisualMapTileVO val = array2DOfTiles[cursorRowIndex, cursorColIndex];
+            //
+            //                paintingTiles.Add(new()
+            //                {
+            //                    CellIndex = currentIndex,
+            //                    BankID = CurrentCursor.BankID,
+            //                    TileSetID = val.TileSetID,
+            //                    TileSetOrigin = val.Point
+            //                });
+            //
+            //                cursorColIndex++;
+            //            }
         }
         else
         {
@@ -1639,6 +1639,7 @@ public class MapViewModel : ItemViewModel
         }
 
         LimitAreaSelectionToCanvasSize();
+        LimitRectangleToCanvasSize(ref rectangle);
 
         List<int> tilesInRect = MapUtils.GetCellsIndicesFromRect(rectangle, model.BckgrRegularSize);
 
@@ -1651,6 +1652,31 @@ public class MapViewModel : ItemViewModel
         }
 
         return tiles;
+    }
+
+    private void LimitRectangleToCanvasSize(ref Rect rectangle)
+    {
+        if (rectangle.X < 0)
+        {
+            rectangle.Width += rectangle.X;
+            rectangle.X = 0;
+        }
+
+        if (rectangle.Y < 0)
+        {
+            rectangle.Height += rectangle.Y;
+            rectangle.Y = 0;
+        }
+
+        if ((rectangle.Width + rectangle.X) > CanvasWidth)
+        {
+            rectangle.Width = CanvasWidth - rectangle.X;
+        }
+
+        if ((rectangle.Height + rectangle.Y) > CanvasHeight)
+        {
+            rectangle.Height = CanvasHeight - rectangle.Y;
+        }
     }
 
     private void LimitAreaSelectionToCanvasSize()

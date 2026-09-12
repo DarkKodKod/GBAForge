@@ -20,12 +20,20 @@ public static class MapUtils
 
     public static List<int> GetCellsIndicesFromRect(Rect rect, BckgrRegularSize size)
     {
+        static int ClosestMultiple(int number)
+        {
+            int remainder = number % CellSize;
+            int closestMultiple = number - remainder;
+
+            return closestMultiple;
+        }
+
         List<int> indices = [];
 
-        double pointX = rect.Left;
-        double pointY = rect.Top;
-        double endPointX = rect.Right;
-        double endPointY = rect.Bottom;
+        int pointX = (int)rect.Left;
+        int pointY = (int)rect.Top;
+        int endPointX = (int)rect.Right;
+        int endPointY = (int)rect.Bottom;
 
         int maxSize = size switch
         {
@@ -45,15 +53,20 @@ public static class MapUtils
 
             indices.Add(cellIndex);
 
+            pointX = ClosestMultiple(pointX);
+
             pointX += CellSize;
 
-            if (pointX > endPointX)
+            if (pointX >= endPointX)
             {
-                pointX = rect.Left;
+                pointX = (int)rect.Left;
+
+                pointY = ClosestMultiple(pointY);
+
                 pointY += CellSize;
             }
 
-            if (pointY > endPointY || pointY >= RegularMapSizeInPixels)
+            if (pointY >= endPointY || pointY >= RegularMapSizeInPixels)
             {
                 canContinue = false;
             }
