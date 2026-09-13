@@ -31,6 +31,21 @@ public class Tile
         TileSetOrigin = default;
         TileSetID = string.Empty;
     }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is null or not Tile)
+        {
+            return false;
+        }
+
+        return PaletteIndex.Equals(((Tile)obj).PaletteIndex)
+            && BankID.Equals(((Tile)obj).BankID)
+            && TileSetOrigin.Equals(((Tile)obj).TileSetOrigin)
+            && TileSetID.Equals(((Tile)obj).TileSetID);
+    }
+
+    public override int GetHashCode() => HashCode.Combine(BankID, TileSetID, TileSetOrigin, PaletteIndex);
 }
 
 public class MapModel : AFileModel

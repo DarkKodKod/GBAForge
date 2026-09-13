@@ -1299,24 +1299,28 @@ public class MapViewModel : ItemViewModel
 
         MapUtils.InvalidateImageFromCache(mapModel.MapID);
 
+        Tile? startingTile = null;
+        bool ignorePreviousValueOnMap = false;
+
         // Pick the tile value where the click was
-        /*if (SelectedTile != null)
+        if (clickedOnTile)
         {
-            Tile tile = mapModel.RegularMapTiles.First((t) => t.CellIndex == SelectedTile.Index);
-        }*/
+            startingTile = mapModel.RegularMapTiles.First((t) => t.CellIndex == selectedTiles[0].Index);
+        }
 
         List<Tile> paintingTiles = [];
 
         if (clickedOnTile && TilesSelectedActive == Visibility.Collapsed)
         {
             // Use the entire canvas as the rectangle
-            //Rect rectangle = new(TilesSelectedOriginX, TilesSelectedOriginY, TilesSelectedWidth, TilesSelectedHeight);
 
-            //selectedTiles = CheckAreaSelected(rectangle);
+            Rect rectangle = new(0, 0, CanvasWidth, CanvasHeight);
+
+            selectedTiles = CheckAreaSelected(rectangle);
         }
         else if (TilesSelectedActive == Visibility.Visible)
         {
-            // 
+            // Use the selected rectangle to fill the tiles in
 
             Rect rectangle = new(TilesSelectedOriginX, TilesSelectedOriginY, TilesSelectedWidth, TilesSelectedHeight);
 
@@ -1325,6 +1329,7 @@ public class MapViewModel : ItemViewModel
         else
         {
             // use the original "selectedTiles" and replace everything with in it
+            ignorePreviousValueOnMap = true;
         }
 
         VisualMapTileVO[,] array2DOfTiles = CurrentCursor.VisualMapTiles;
@@ -1368,13 +1373,18 @@ public class MapViewModel : ItemViewModel
 
             VisualMapTileVO val = array2DOfTiles[cursorRowIndex, cursorColIndex];
 
-            paintingTiles.Add(new()
+            if (ignorePreviousValueOnMap ||
+                startingTile == null ||
+                mapModel.RegularMapTiles[currentIndex].Equals(startingTile))
             {
-                CellIndex = currentIndex,
-                BankID = CurrentCursor.BankID,
-                TileSetID = val.TileSetID,
-                TileSetOrigin = val.Point
-            });
+                paintingTiles.Add(new()
+                {
+                    CellIndex = currentIndex,
+                    BankID = CurrentCursor.BankID,
+                    TileSetID = val.TileSetID,
+                    TileSetOrigin = val.Point
+                });
+            }
 
             cursorColIndex++;
         }
