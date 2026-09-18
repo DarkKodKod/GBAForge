@@ -39,15 +39,11 @@ public struct Rectangle<T> where T : struct, INumber<T>
 
     public static Rectangle<T> operator +(Rectangle<T> r, (T numX, T numY) shift)
     {
-        ArgumentNullException.ThrowIfNull(r);
-
         return new Rectangle<T>(r.X + shift.numX, r.Y + shift.numY, r.Width, r.Height);
     }
 
     public static Rectangle<T> operator *(Rectangle<T> r, T scale)
     {
-        ArgumentNullException.ThrowIfNull(r);
-
         return new Rectangle<T>(r.X, r.Y, r.Width * scale, r.Height * scale);
     }
 

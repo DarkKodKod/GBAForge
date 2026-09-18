@@ -182,7 +182,7 @@ public static class MapUtils
         if (targetValue == newValue)
         {
             return;
-        }   
+        }
 
         // Cola para almacenar las posiciones a procesar (X, Y)
         Queue<(int, int)> queue = [];
