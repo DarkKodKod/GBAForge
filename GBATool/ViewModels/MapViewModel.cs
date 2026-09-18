@@ -135,7 +135,6 @@ public class MapViewModel : ItemViewModel
     private int _mouseSelectionWidth;
     private int _mouseSelectionHeight;
     private Point _initialMousePositionInCanvas;
-    private (string, int)[] _selectedTiles = [];
     private Visibility _tilesSelectedActive;
     private int _tilesSelectedWidth;
     private int _tilesSelectedHeight;
