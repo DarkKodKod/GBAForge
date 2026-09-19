@@ -11,11 +11,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Interop;
 using System.Windows.Media;
 
 namespace GBATool
@@ -25,50 +23,6 @@ namespace GBATool
     /// </summary>
     public partial class MainWindow : Window
     {
-        #region DLL Imports
-        [StructLayout(LayoutKind.Sequential)]
-        internal struct RECT
-        {
-            public int Left;
-            public int Top;
-            public int Right;
-            public int Bottom;
-        }
-
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-        internal unsafe struct MonitorInfoEx
-        {
-            public int cbSize;
-            public RECT rcMonitor;
-            public RECT rcWork;
-            public uint dwFlags;
-
-            public fixed char szDeviceName[32];
-
-            public readonly string DeviceName
-            {
-                get
-                {
-                    fixed (char* ptr = szDeviceName)
-                    {
-                        return new string(ptr);
-                    }
-                }
-            }
-        }
-
-        [LibraryImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static partial bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
-
-        [LibraryImport("user32.dll")]
-        internal static partial IntPtr MonitorFromWindow(IntPtr hWnd, int dwFlags);
-
-        [LibraryImport("user32.dll", EntryPoint = "GetMonitorInfoW", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static partial bool GetMonitorInfoEx(IntPtr hMonitor, ref MonitorInfoEx lpmi);
-        #endregion
-
         private ProjectItemType _currentViewType = ProjectItemType.None;
 
         private LoadingDialog? _loadingDialog = null;
@@ -269,26 +223,14 @@ namespace GBATool
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            Window window = GetWindow(this);
-            WindowInteropHelper wih = new(window);
-            IntPtr hWnd = wih.Handle;
+            if (!IsLoaded)
+            {
+                return;
+            }
 
-            const int MONITOR_DEFAULTTOPRIMARY = 1;
-            MonitorInfoEx mi = new();
-            mi.cbSize = Marshal.SizeOf(mi);
-            GetMonitorInfoEx(MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY), ref mi);
+            bool isFullscreen = WindowState == WindowState.Maximized && (WindowStyle == WindowStyle.None || WindowStyle == WindowStyle.SingleBorderWindow);
 
-            GetWindowRect(hWnd, out RECT appBounds);
-
-            double windowHeight = appBounds.Right - appBounds.Left;
-            double windowWidth = appBounds.Bottom - appBounds.Top;
-
-            double monitorHeight = mi.rcMonitor.Right - mi.rcMonitor.Left;
-            double monitorWidth = mi.rcMonitor.Bottom - mi.rcMonitor.Top;
-
-            bool fullScreen = !((windowHeight == monitorHeight) && (windowWidth == monitorWidth));
-
-            SignalManager.Get<SizeChangedSignal>().Dispatch(e, fullScreen);
+            SignalManager.Get<SizeChangedSignal>().Dispatch(e, isFullscreen);
         }
 
         private void OnSetUpWindowProperties(WindowVO vo)
@@ -546,30 +488,6 @@ namespace GBATool
                 treeViewItem.Focus();
                 e.Handled = true;
             }
-        }
-
-        private void MainWindowView_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            Window window = Window.GetWindow(this);
-            WindowInteropHelper wih = new(window);
-            IntPtr hWnd = wih.Handle;
-
-            const int MONITOR_DEFAULTTOPRIMARY = 1;
-            MonitorInfoEx mi = new();
-            mi.cbSize = Marshal.SizeOf(mi);
-            GetMonitorInfoEx(MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY), ref mi);
-
-            GetWindowRect(hWnd, out RECT appBounds);
-
-            double windowHeight = appBounds.Right - appBounds.Left;
-            double windowWidth = appBounds.Bottom - appBounds.Top;
-
-            double monitorHeight = mi.rcMonitor.Right - mi.rcMonitor.Left;
-            double monitorWidth = mi.rcMonitor.Bottom - mi.rcMonitor.Top;
-
-            bool fullScreen = !((windowHeight == monitorHeight) && (windowWidth == monitorWidth));
-
-            SignalManager.Get<SizeChangedSignal>().Dispatch(e, fullScreen);
         }
 
         private void OnUpdateFolder(ProjectItem item)

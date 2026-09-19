@@ -79,7 +79,7 @@ public class MainWindowViewModel : ViewModel
     private string _projectName = "";
     private List<ProjectItem>? _projectItems = [];
     private List<RecentProjectModel> _recentProjects = [];
-    private bool? _isFullscreen = null;
+    private bool? _isFullscreen = null; // this variable is null to indicate the fullscreen status is has not being set yet
     private readonly string _appName = "";
 
     #region Drag & Drop
@@ -449,7 +449,7 @@ public class MainWindowViewModel : ViewModel
         }
     }
 
-    private void OnSizeChanged(SizeChangedEventArgs args, bool fullscreen)
+    private void OnSizeChanged(SizeChangedEventArgs args, bool fullScreen)
     {
         bool changed = false;
 
@@ -467,11 +467,11 @@ public class MainWindowViewModel : ViewModel
             changed = true;
         }
 
-        if (_isFullscreen != fullscreen)
+        if (_isFullscreen != fullScreen)
         {
-            _isFullscreen = fullscreen;
+            _isFullscreen = fullScreen;
 
-            ModelManager.Get<GBAToolConfigurationModel>().FullScreen = fullscreen;
+            ModelManager.Get<GBAToolConfigurationModel>().FullScreen = fullScreen;
 
             changed = true;
         }
