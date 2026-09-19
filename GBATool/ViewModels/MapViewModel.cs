@@ -1309,13 +1309,11 @@ public class MapViewModel : ItemViewModel
 
         List<Tile> paintingTiles = [];
 
-        if (clickedOnTile && TilesSelectedActive == Visibility.Collapsed)
+        if (clickedOnTile && TilesSelectedActive == Visibility.Collapsed && startingTile != null)
         {
-            // Use the entire canvas as the rectangle
+            // Use flood fill to know what tiles do I want to change            
 
-            Rect rectangle = new(0, 0, CanvasWidth, CanvasHeight);
-
-            selectedTiles = CheckAreaSelected(rectangle);
+            selectedTiles = GetFloodFillTiles(mapModel.RegularMapTiles, startingTile);
         }
         else if (TilesSelectedActive == Visibility.Visible)
         {
@@ -1635,8 +1633,6 @@ public class MapViewModel : ItemViewModel
             return;
         }
 
-        List<(string, int)> selectedTiles = [];
-
         int width = 0;
         int height = 0;
         int continuousIndex = -1;
@@ -1684,5 +1680,49 @@ public class MapViewModel : ItemViewModel
         TilesSelectedHeight = height;
         TilesSelectedOriginX = (int)origin.X;
         TilesSelectedOriginY = (int)origin.Y;
+    }
+
+    public List<TileObject> GetFloodFillTiles(List<Tile> map, Tile startingTile)
+    {
+        List<TileObject> tiles = [];
+        Queue<(int x, int y, int index)> queue = [];
+        HashSet<int> visited = [];
+
+        int x = startingTile.CellIndex % MapUtils.RegularMapSizeWidth;
+        int y = startingTile.CellIndex / MapUtils.RegularMapSizeWidth;
+
+        queue.Enqueue((x, y, startingTile.CellIndex));
+        visited.Add(startingTile.CellIndex);
+
+        // 4-directional offsets
+        int[] dx = [-1, 1, 0, 0];
+        int[] dy = [0, 0, -1, 1];
+
+        while (queue.Count > 0)
+        {
+            (int currX, int currY, int cellIndex) = queue.Dequeue();
+
+            tiles.Add(Tiles[cellIndex]);
+
+            for (int i = 0; i < 4; i++)
+            {
+                int newX = currX + dx[i];
+                int newY = currY + dy[i];
+
+                if (newX >= 0 && newX < MapUtils.RegularMapSizeWidth &&
+                    newY >= 0 && newY < MapUtils.RegularMapSizeHeight)
+                {
+                    int index = (newY * MapUtils.RegularMapSizeWidth) + newX;
+
+                    if (!visited.Contains(index) && map[index].Equals(startingTile))
+                    {
+                        queue.Enqueue((newX, newY, index));
+                        visited.Add(index);
+                    }
+                }
+            }
+        }
+
+        return tiles;
     }
 }

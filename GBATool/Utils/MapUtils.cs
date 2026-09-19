@@ -14,6 +14,7 @@ public static class MapUtils
 
     public const int CellSize = 8;
     public const int RegularMapSizeWidth = 32;
+    public const int RegularMapSizeHeight = 32;
     public const int AffineMapSizeWidth = 16;
     public const int RegularMapSizeInPixels = RegularMapSizeWidth * CellSize;
     public const int AffineMapSizeInPixels = AffineMapSizeWidth * CellSize;
@@ -168,58 +169,5 @@ public static class MapUtils
         }
 
         return mapBitmap;
-    }
-
-    public static void FloodFill(int[,] matrix, int startX, int startY, int newValue)
-    {
-        int rows = matrix.GetLength(0);
-        int cols = matrix.GetLength(1);
-
-        // Obtener el valor original de la celda donde se hizo click
-        int targetValue = matrix[startX, startY];
-
-        // Si el valor objetivo es igual al nuevo valor, no hace falta hacer nada
-        if (targetValue == newValue)
-        {
-            return;
-        }
-
-        // Cola para almacenar las posiciones a procesar (X, Y)
-        Queue<(int, int)> queue = [];
-
-        // Agregar la celda inicial a la cola
-        queue.Enqueue((startX, startY));
-
-        // Direcciones para moverse: Arriba, Abajo, Izquierda, Derecha
-        int[] rowOffsets = { -1, 1, 0, 0 };
-        int[] colOffsets = { 0, 0, -1, 1 };
-
-        while (queue.Count > 0)
-        {
-            (int currX, int currY) = queue.Dequeue();
-
-            // Si la celda actual tiene el valor buscado, la cambiamos
-            if (matrix[currX, currY] == targetValue)
-            {
-                matrix[currX, currY] = newValue;
-
-                // Revisar los 4 vecinos adyacentes
-                for (int i = 0; i < 4; i++)
-                {
-                    int newX = currX + rowOffsets[i];
-                    int newY = currY + colOffsets[i];
-
-                    // Validar que el vecino esté dentro de los límites de la matriz
-                    if (newX >= 0 && newX < rows && newY >= 0 && newY < cols)
-                    {
-                        // Solo encolar si el vecino tiene el valor original que queremos reemplazar
-                        if (matrix[newX, newY] == targetValue)
-                        {
-                            queue.Enqueue((newX, newY));
-                        }
-                    }
-                }
-            }
-        }
     }
 }
