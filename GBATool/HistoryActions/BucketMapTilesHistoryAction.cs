@@ -12,14 +12,14 @@ public class BucketMapTilesHistoryAction : IHistoryAction
     private readonly List<Tile> _bucketTiles = [];
     private readonly string _mapID = string.Empty;
 
-    public BucketMapTilesHistoryAction(MapModel? mapModel, List<Tile> paintingTiles, string mapID)
+    public BucketMapTilesHistoryAction(MapModel? mapModel, List<Tile> paintingTiles)
     {
-        _mapID = mapID;
-
         if (mapModel == null)
         {
             return;
         }
+
+        _mapID = mapModel.MapID;
 
         Tile[] tiles = [.. mapModel.RegularMapTiles];
 

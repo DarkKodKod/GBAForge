@@ -13,15 +13,16 @@ public class DeleteMapTilesHitoryAction : IHistoryAction
     private readonly List<Tile> _originalTiles = [];
     private readonly string _mapID = string.Empty;
 
-    public DeleteMapTilesHitoryAction(MapModel? mapModel, List<TileObject> selectedTiles, string mapID)
+    public DeleteMapTilesHitoryAction(MapModel? mapModel, List<TileObject> selectedTiles)
     {
-        _mapID = mapID;
         _selectedTiles = selectedTiles;
 
         if (mapModel == null)
         {
             return;
         }
+
+        _mapID = mapModel.MapID;
 
         Tile[] tiles = [.. mapModel.RegularMapTiles];
 
