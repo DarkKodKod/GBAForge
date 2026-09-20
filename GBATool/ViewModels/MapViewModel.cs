@@ -1086,7 +1086,7 @@ public class MapViewModel : ItemViewModel
         }
         else
         {
-            selectedTiles = [GetSelectedVisualTile(pos, model.BckgrRegularSize)];
+            selectedTiles = [GetSelectedVisualTile(pos, model)];
             clickedOnTile = true;
         }
 
@@ -1138,6 +1138,13 @@ public class MapViewModel : ItemViewModel
             return;
         }
 
+        MapModel? model = GetModel();
+
+        if (model == null)
+        {
+            return;
+        }
+
         MapUtils.InvalidateImageFromCache(mapID);
 
         List<Tile> paintingTiles = [];
@@ -1149,13 +1156,24 @@ public class MapViewModel : ItemViewModel
 
             VisualMapTileVO[,] array2DOfTiles = CurrentCursor.VisualMapTiles;
 
+            int mapSizeWidth;
+
+            if (model.MapType == MapType.Regular)
+            {
+                mapSizeWidth = MapUtils.GetRegularMapSizeWidth(model.BckgrRegularSize);
+            }
+            else
+            {
+                mapSizeWidth = MapUtils.GetAffineMapSize(model.BckgrAffineSize);
+            }
+
             for (int row = 0; row < array2DOfTiles.GetLength(0); row++)
             {
                 for (int col = 0; col < array2DOfTiles.GetLength(1); col++)
                 {
                     VisualMapTileVO val = array2DOfTiles[row, col];
 
-                    int tileIndex = selectedTiles[0].Index + (row * MapUtils.RegularMapSizeWidth) + col;
+                    int tileIndex = selectedTiles[0].Index + (row * mapSizeWidth) + col;
 
                     if (val != VisualMapTileVO.Empty)
                     {
@@ -1313,7 +1331,7 @@ public class MapViewModel : ItemViewModel
         {
             // Use flood fill to know what tiles do I want to change            
 
-            selectedTiles = GetFloodFillTiles(mapModel.RegularMapTiles, startingTile);
+            selectedTiles = GetFloodFillTiles(mapModel.RegularMapTiles, startingTile, mapModel);
         }
         else if (TilesSelectedActive == Visibility.Visible)
         {
@@ -1534,9 +1552,9 @@ public class MapViewModel : ItemViewModel
         }
     }
 
-    private TileObject GetSelectedVisualTile(Point position, BckgrRegularSize size)
+    private TileObject GetSelectedVisualTile(Point position, MapModel model)
     {
-        int cellIndex = MapUtils.GetCellIndexFromPoint(position, size);
+        int cellIndex = MapUtils.GetCellIndexFromPoint(position, model);
 
         return Tiles[cellIndex];
     }
@@ -1561,7 +1579,7 @@ public class MapViewModel : ItemViewModel
         LimitAreaSelectionToCanvasSize();
         LimitRectangleToCanvasSize(ref rectangle);
 
-        List<int> tilesInRect = MapUtils.GetCellsIndicesFromRect(rectangle, model.BckgrRegularSize);
+        List<int> tilesInRect = MapUtils.GetCellsIndicesFromRect(rectangle, model);
 
         if (tilesInRect.Count > 0)
         {
@@ -1633,10 +1651,27 @@ public class MapViewModel : ItemViewModel
             return;
         }
 
+        MapModel? model = GetModel();
+
+        if (model == null)
+        {
+            return;
+        }
+
         int width = 0;
         int height = 0;
         int continuousIndex = -1;
         int accumulativeWidth = 0;
+        int widthInPixels;
+
+        if (model.MapType == MapType.Regular)
+        {
+            widthInPixels = MapUtils.GetRegularMapSizeWidthInPixels(model.BckgrRegularSize);
+        }
+        else
+        {
+            widthInPixels = MapUtils.GetAffineMapSizeInPixels(model.BckgrAffineSize);
+        }
 
         for (int i = 0; i < tiles.Length; i++)
         {
@@ -1649,7 +1684,7 @@ public class MapViewModel : ItemViewModel
                 accumulativeWidth = MapUtils.CellSize;
             }
             else if (continuousIndex + 1 == tiles[i].Index &&
-                accumulativeWidth < MapUtils.RegularMapSizeWidth * MapUtils.CellSize)
+                accumulativeWidth < widthInPixels)
             {
                 continuousIndex++;
 
@@ -1673,7 +1708,7 @@ public class MapViewModel : ItemViewModel
 
         SelectedTile = tiles.Length == 1 ? tiles[0] : null;
 
-        Point origin = MapUtils.GetCellPointFromIndex(tiles[0].Index);
+        Point origin = MapUtils.GetCellPointFromIndex(tiles[0].Index, model);
 
         TilesSelectedActive = Visibility.Visible;
         TilesSelectedWidth = width;
@@ -1682,14 +1717,28 @@ public class MapViewModel : ItemViewModel
         TilesSelectedOriginY = (int)origin.Y;
     }
 
-    public List<TileObject> GetFloodFillTiles(List<Tile> map, Tile startingTile)
+    public List<TileObject> GetFloodFillTiles(List<Tile> map, Tile startingTile, MapModel model)
     {
         List<TileObject> tiles = [];
         Queue<(int x, int y, int index)> queue = [];
         HashSet<int> visited = [];
 
-        int x = startingTile.CellIndex % MapUtils.RegularMapSizeWidth;
-        int y = startingTile.CellIndex / MapUtils.RegularMapSizeWidth;
+        int mapWidth;
+        int mapHeight;
+
+        if (model.MapType == MapType.Regular)
+        {
+            mapWidth = MapUtils.GetRegularMapSizeWidth(model.BckgrRegularSize);
+            mapHeight = MapUtils.GetRegularMapSizeHeight(model.BckgrRegularSize);
+        }
+        else
+        {
+            mapWidth = MapUtils.GetAffineMapSize(model.BckgrAffineSize);
+            mapHeight = mapWidth;
+        }
+
+        int x = startingTile.CellIndex % mapWidth;
+        int y = startingTile.CellIndex / mapWidth;
 
         queue.Enqueue((x, y, startingTile.CellIndex));
         visited.Add(startingTile.CellIndex);
@@ -1709,10 +1758,10 @@ public class MapViewModel : ItemViewModel
                 int newX = currX + dx[i];
                 int newY = currY + dy[i];
 
-                if (newX >= 0 && newX < MapUtils.RegularMapSizeWidth &&
-                    newY >= 0 && newY < MapUtils.RegularMapSizeHeight)
+                if (newX >= 0 && newX < mapWidth &&
+                    newY >= 0 && newY < mapHeight)
                 {
-                    int index = (newY * MapUtils.RegularMapSizeWidth) + newX;
+                    int index = (newY * mapWidth) + newX;
 
                     if (!visited.Contains(index) && map[index].Equals(startingTile))
                     {

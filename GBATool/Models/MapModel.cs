@@ -67,7 +67,7 @@ public class MapModel : AFileModel
     }
 
     [JsonIgnore]
-    public const int RegularTileMinSize = MapUtils.RegularMapSizeWidth * MapUtils.RegularMapSizeWidth;
+    public const int RegularTileMinSize = MapUtils.RegularMapMinimumSize * MapUtils.RegularMapMinimumSize;
     [JsonIgnore]
     public const int NumberOfBackgrounds = 4;
     [JsonIgnore]

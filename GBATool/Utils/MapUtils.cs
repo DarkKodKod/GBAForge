@@ -13,13 +13,54 @@ public static class MapUtils
     private readonly static ConcurrentDictionary<string, WriteableBitmap> _frameBitmapCache = [];
 
     public const int CellSize = 8;
-    public const int RegularMapSizeWidth = 32;
-    public const int RegularMapSizeHeight = 32;
-    public const int AffineMapSizeWidth = 16;
-    public const int RegularMapSizeInPixels = RegularMapSizeWidth * CellSize;
-    public const int AffineMapSizeInPixels = AffineMapSizeWidth * CellSize;
+    public const int RegularMapMinimumSize = 32;
+    public const int AffineMapMinimumSize = 16;
 
-    public static List<int> GetCellsIndicesFromRect(Rect rect, BckgrRegularSize size)
+    public static int GetRegularMapSizeWidth(BckgrRegularSize size)
+    {
+        return size switch
+        {
+            BckgrRegularSize.Wide or BckgrRegularSize.Big => RegularMapMinimumSize * 2,
+            BckgrRegularSize.Small or BckgrRegularSize.Tall or _ => RegularMapMinimumSize
+        };
+    }
+
+    public static int GetRegularMapSizeHeight(BckgrRegularSize size)
+    {
+        return size switch
+        {
+            BckgrRegularSize.Big or BckgrRegularSize.Tall => RegularMapMinimumSize * 2,
+            BckgrRegularSize.Small or BckgrRegularSize.Wide or _ => RegularMapMinimumSize,
+        };
+    }
+
+    public static int GetRegularMapSizeWidthInPixels(BckgrRegularSize size)
+    {
+        return GetRegularMapSizeWidth(size) * CellSize;
+    }
+
+    public static int GetRegularMapSizeHeightInPixels(BckgrRegularSize size)
+    {
+        return GetRegularMapSizeHeight(size) * CellSize;
+    }
+
+    public static int GetAffineMapSize(BckgrAffineSize size)
+    {
+        return size switch
+        {
+            BckgrAffineSize.Affine128x128 => AffineMapMinimumSize * 8,
+            BckgrAffineSize.Affine64x64 => AffineMapMinimumSize * 4,
+            BckgrAffineSize.Affine32x32 => AffineMapMinimumSize * 2,
+            BckgrAffineSize.Affine16x16 or _ => AffineMapMinimumSize
+        };
+    }
+
+    public static int GetAffineMapSizeInPixels(BckgrAffineSize size)
+    {
+        return GetAffineMapSize(size) * CellSize;
+    }
+
+    public static List<int> GetCellsIndicesFromRect(Rect rect, MapModel model)
     {
         static int ClosestMultiple(int number)
         {
@@ -36,16 +77,28 @@ public static class MapUtils
         int endPointX = (int)rect.Right;
         int endPointY = (int)rect.Bottom;
 
-        int maxSize = size switch
+        int maxSize;
+        int sizeHeightInPixels;
+
+        if (model.MapType == MapType.Regular)
         {
-            BckgrRegularSize.Small => RegularMapSizeWidth * RegularMapSizeWidth,
-            _ => 0,
-        };
+            int size = GetRegularMapSizeWidth(model.BckgrRegularSize);
+
+            maxSize = size * size;
+            sizeHeightInPixels = GetRegularMapSizeHeightInPixels(model.BckgrRegularSize);
+        }
+        else
+        {
+            int size = GetAffineMapSize(model.BckgrAffineSize);
+
+            maxSize = size * size;
+            sizeHeightInPixels = GetAffineMapSizeInPixels(model.BckgrAffineSize);
+        }
 
         bool canContinue = true;
         while (canContinue)
         {
-            int cellIndex = GetCellIndexFromPoint(new Point(pointX, pointY), size);
+            int cellIndex = GetCellIndexFromPoint(new Point(pointX, pointY), model);
 
             if (cellIndex >= CellSize * maxSize)
             {
@@ -67,7 +120,7 @@ public static class MapUtils
                 pointY += CellSize;
             }
 
-            if (pointY >= endPointY || pointY >= RegularMapSizeInPixels)
+            if (pointY >= endPointY || pointY >= (sizeHeightInPixels * CellSize))
             {
                 canContinue = false;
             }
@@ -76,23 +129,42 @@ public static class MapUtils
         return indices;
     }
 
-    public static int GetCellIndexFromPoint(Point point, BckgrRegularSize size)
+    public static int GetCellIndexFromPoint(Point point, MapModel model)
     {
-        int sizeMatrix = size switch
-        {
-            BckgrRegularSize.Small => RegularMapSizeWidth,
-            _ => 0,
-        };
+        int sizeWidth;
 
-        int cellIndex = ((int)point.X / CellSize) + ((int)point.Y / CellSize * sizeMatrix);
+        if (model.MapType == MapType.Regular)
+        {
+            sizeWidth = GetRegularMapSizeWidth(model.BckgrRegularSize);
+        }
+        else
+        {
+            sizeWidth = GetAffineMapSize(model.BckgrAffineSize);
+        }
+
+        int cellIndex = ((int)point.X / CellSize) + ((int)point.Y / CellSize * sizeWidth);
 
         return cellIndex;
     }
 
-    public static Point GetCellPointFromIndex(int cellIndex)
+    public static Point GetCellPointFromIndex(int cellIndex, MapModel model)
     {
-        int x = (cellIndex % RegularMapSizeWidth) * CellSize;
-        int y = (cellIndex * CellSize - x) / RegularMapSizeWidth;
+        int sizeWidth;
+        int sizeHeight;
+
+        if (model.MapType == MapType.Regular)
+        {
+            sizeWidth = GetRegularMapSizeWidth(model.BckgrRegularSize);
+            sizeHeight = GetRegularMapSizeHeight(model.BckgrRegularSize);
+        }
+        else
+        {
+            sizeWidth = GetAffineMapSize(model.BckgrAffineSize);
+            sizeHeight = sizeWidth;
+        }
+
+        int x = (cellIndex % sizeWidth) * CellSize;
+        int y = (cellIndex * CellSize - x) / sizeHeight;
 
         return new Point(x, y);
     }
@@ -126,13 +198,21 @@ public static class MapUtils
 
     private static WriteableBitmap CreateMap(MapModel model)
     {
-        int matrixSize = model.BckgrRegularSize switch
-        {
-            BckgrRegularSize.Small => RegularMapSizeInPixels,
-            _ => 0
-        };
+        int matrixSizeWidth;
+        int matrixSizeHeight;
 
-        WriteableBitmap mapBitmap = BitmapFactory.New(matrixSize, matrixSize);
+        if (model.MapType == MapType.Regular)
+        {
+            matrixSizeWidth = GetRegularMapSizeWidth(model.BckgrRegularSize);
+            matrixSizeHeight = GetRegularMapSizeHeight(model.BckgrRegularSize);
+        }
+        else
+        {
+            matrixSizeWidth = GetAffineMapSize(model.BckgrAffineSize);
+            matrixSizeHeight = matrixSizeWidth;
+        }
+
+        WriteableBitmap mapBitmap = BitmapFactory.New(matrixSizeWidth * CellSize, matrixSizeHeight * CellSize);
 
         using (mapBitmap.GetBitmapContext())
         {
@@ -161,8 +241,8 @@ public static class MapUtils
 
                 WriteableBitmap cropped = sourceBitmap.Crop((int)tile.TileSetOrigin.X, (int)tile.TileSetOrigin.Y, CellSize, CellSize);
 
-                int x = (tile.CellIndex % RegularMapSizeWidth) * CellSize;
-                int y = (tile.CellIndex / RegularMapSizeWidth) * CellSize;
+                int x = (tile.CellIndex % matrixSizeWidth) * CellSize;
+                int y = (tile.CellIndex / matrixSizeHeight) * CellSize;
 
                 Util.CopyBitmapImageToWriteableBitmap(ref mapBitmap, x, y, cropped);
             }
