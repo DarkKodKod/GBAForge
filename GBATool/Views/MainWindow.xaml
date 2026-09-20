@@ -49,6 +49,7 @@
         <KeyBinding Key="Z" Modifiers="Ctrl" Command="{Binding UndoCommand}" />
         <KeyBinding Key="F2" Command="{Binding EnableRenameElementCommand}" />
         <KeyBinding Key="Y" Modifiers="Ctrl" Command="{Binding RedoCommand}" />
+        <KeyBinding Key="Z" Modifiers="Ctrl+Shift" Command="{Binding RedoCommand}" />
         <KeyBinding Key="I" Modifiers="Ctrl" Command="{Binding OpenImportImageDialogCommand}" CommandParameter="{Binding ElementName=MainWindowView}" />
     </Window.InputBindings>
     <i:Interaction.Triggers>

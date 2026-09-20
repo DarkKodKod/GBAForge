@@ -11,11 +11,11 @@ public class DeleteMapTilesHitoryAction : IHistoryAction
 {
     private readonly List<TileObject> _selectedTiles = [];
     private readonly List<Tile> _originalTiles = [];
-    private readonly List<string> _mapIDs = [];
+    private readonly string _mapID = string.Empty;
 
-    public DeleteMapTilesHitoryAction(MapModel? mapModel, List<TileObject> selectedTiles, List<string> mapIDs)
+    public DeleteMapTilesHitoryAction(MapModel? mapModel, List<TileObject> selectedTiles, string mapID)
     {
-        _mapIDs = mapIDs;
+        _mapID = mapID;
         _selectedTiles = selectedTiles;
 
         if (mapModel == null)
@@ -41,7 +41,7 @@ public class DeleteMapTilesHitoryAction : IHistoryAction
     {
         if (_selectedTiles.Count > 0)
         {
-            SignalManager.Get<InvalidateMapCacheSignal>().Dispatch(_mapIDs);
+            SignalManager.Get<InvalidateMapCacheSignal>().Dispatch([_mapID]);
             SignalManager.Get<DeleteMapTilesSignal>().Dispatch(_selectedTiles);
         }
     }
@@ -50,7 +50,7 @@ public class DeleteMapTilesHitoryAction : IHistoryAction
     {
         if (_originalTiles.Count > 0)
         {
-            SignalManager.Get<InvalidateMapCacheSignal>().Dispatch(_mapIDs);
+            SignalManager.Get<InvalidateMapCacheSignal>().Dispatch([_mapID]);
             SignalManager.Get<PaintMapTilesSignal>().Dispatch(_originalTiles);
         }
     }

@@ -1406,6 +1406,8 @@ public class MapViewModel : ItemViewModel
 
         if (paintingTiles.Count > 0)
         {
+            SignalManager.Get<InvalidateMapCacheSignal>().Dispatch([mapModel.MapID]);
+            SignalManager.Get<RegisterHistoryActionSignal>().Dispatch(new BucketMapTilesHistoryAction(mapModel, paintingTiles, mapModel.MapID));
             SignalManager.Get<PaintMapTilesSignal>().Dispatch(paintingTiles);
         }
 
@@ -1429,7 +1431,7 @@ public class MapViewModel : ItemViewModel
         }
 
         SignalManager.Get<InvalidateMapCacheSignal>().Dispatch([mapID]);
-        SignalManager.Get<RegisterHistoryActionSignal>().Dispatch(new DeleteMapTilesHitoryAction(mapModel, selectedTiles, [mapID]));
+        SignalManager.Get<RegisterHistoryActionSignal>().Dispatch(new DeleteMapTilesHitoryAction(mapModel, selectedTiles, mapID));
         SignalManager.Get<DeleteMapTilesSignal>().Dispatch(selectedTiles);
     }
 
