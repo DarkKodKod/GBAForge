@@ -607,6 +607,14 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
 
     private void SelectArbitrarySizeOfTiles(Image? image)
     {
+        static int ClosestMultiple(int number)
+        {
+            int remainder = number % BankUtils.SizeOfCellInPixels;
+            int closestMultiple = number - remainder;
+
+            return closestMultiple;
+        }
+
         if (_metaData == null)
         {
             return;
@@ -617,12 +625,12 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
             return;
         }
 
-        int x = (int)Math.Floor((double)MouseSelectionOriginX / BankUtils.SizeOfCellInPixels) * BankUtils.SizeOfCellInPixels;
-        int y = (int)Math.Floor((double)MouseSelectionOriginY / BankUtils.SizeOfCellInPixels) * BankUtils.SizeOfCellInPixels;
-        int w = (int)Math.Ceiling((double)MouseSelectionWidth / BankUtils.SizeOfCellInPixels) * BankUtils.SizeOfCellInPixels;
-        int h = (int)Math.Ceiling((double)MouseSelectionHeight / BankUtils.SizeOfCellInPixels) * BankUtils.SizeOfCellInPixels;
+        int x;
+        int y;
+        int w = 0;
+        int h = 0;
 
-        if (w == 0 && h == 0)
+        if (MouseSelectionWidth == 0 && MouseSelectionHeight == 0)
         {
             // select just the single tile
             Point pos = Mouse.GetPosition(image);
@@ -631,6 +639,27 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
             y = (int)Math.Floor(pos.Y / BankUtils.SizeOfCellInPixels) * BankUtils.SizeOfCellInPixels;
             w = MapUtils.CellSize;
             h = MapUtils.CellSize;
+        }
+        else
+        {
+            Rect rect = new(MouseSelectionOriginX, MouseSelectionOriginY, MouseSelectionWidth, MouseSelectionHeight);
+
+            x = ClosestMultiple(MouseSelectionOriginX);
+            y = ClosestMultiple(MouseSelectionOriginY);
+
+            int width = x;
+            while (width < rect.Right)
+            {
+                w += BankUtils.SizeOfCellInPixels;
+                width += 8;
+            }
+
+            int height = y;
+            while (height < rect.Bottom)
+            {
+                h += BankUtils.SizeOfCellInPixels;
+                height += 8;
+            }
         }
 
         SpriteRectLeft = x;
