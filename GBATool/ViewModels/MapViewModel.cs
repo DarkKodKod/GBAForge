@@ -1292,6 +1292,8 @@ public class MapViewModel : ItemViewModel
             // Use flood fill to know what tiles do I want to change            
 
             selectedTiles = GetFloodFillTiles(mapModel.RegularMapTiles, startingTile, mapModel);
+
+            selectedTiles = [.. selectedTiles.OrderBy(t => t.Index)];
         }
         else if (TilesSelectedActive == Visibility.Visible)
         {
@@ -1315,52 +1317,77 @@ public class MapViewModel : ItemViewModel
         int cursorRowIndex = 0;
         int previousIndex = -1;
         int currentIndex;
+        int currentRow = 0;
 
-        foreach (TileObject tileObject in selectedTiles)
+        int mapSizeWidthInPixels;
+        int mapSizeHeightInPixels;
+
+        if (mapModel.MapType == MapType.Regular)
         {
+            mapSizeWidthInPixels = MapUtils.GetRegularMapSizeWidthInPixels(mapModel.BckgrRegularSize);
+            mapSizeHeightInPixels = MapUtils.GetRegularMapSizeHeightInPixels(mapModel.BckgrRegularSize);
+        }
+        else
+        {
+            mapSizeWidthInPixels = MapUtils.GetAffineMapSizeInPixels(mapModel.BckgrAffineSize);
+            mapSizeHeightInPixels = mapSizeWidthInPixels;
+        }
+
+        // capture all the tiles for the entire canvas
+        List<TileObject> entireCanvasTiles = CheckAreaSelected(new Rect(0, 0, mapSizeWidthInPixels, mapSizeHeightInPixels));
+
+        foreach (TileObject tileObject in entireCanvasTiles)
+        {
+            bool isPartOfArea = selectedTiles.Exists(t => t.Index == tileObject.Index);
+
             currentIndex = tileObject.Index;
 
-            bool contiguousTile = true;
+            int row = currentIndex / (mapSizeWidthInPixels / MapUtils.CellSize);
 
-            if (previousIndex > 0 &&
-                currentIndex != previousIndex + 1)
+            if (previousIndex >= 0)
             {
-                contiguousTile = false;
-            }
+                bool didReachedEndOfRow = row != currentRow;
 
-            if (cursorColIndex == cursorColsCount)
-            {
-                cursorColIndex = 0;
-            }
-
-            if (!contiguousTile)
-            {
-                cursorRowIndex++;
-                cursorColIndex = 0;
-
-                if (cursorRowIndex == cursorRowsCount)
+                if (didReachedEndOfRow)
                 {
-                    cursorRowIndex = 0;
+                    cursorRowIndex++;
+                    cursorColIndex = 0;
+
+                    if (cursorRowIndex == cursorRowsCount)
+                    {
+                        cursorRowIndex = 0;
+                    }
+
+                    currentRow = row;
+                }
+
+                bool didReachedEndCursor = cursorColIndex == cursorColsCount;
+
+                if (didReachedEndCursor)
+                {
+                    cursorColIndex = 0;
+                }
+            }
+
+            if (isPartOfArea)
+            {
+                VisualMapTileVO val = array2DOfTiles[cursorRowIndex, cursorColIndex];
+
+                if (ignorePreviousValueOnMap ||
+                    startingTile == null ||
+                    mapModel.RegularMapTiles[currentIndex].Equals(startingTile))
+                {
+                    paintingTiles.Add(new()
+                    {
+                        CellIndex = currentIndex,
+                        BankID = CurrentCursor.BankID,
+                        TileSetID = val.TileSetID,
+                        TileSetOrigin = val.Point
+                    });
                 }
             }
 
             previousIndex = currentIndex;
-
-            VisualMapTileVO val = array2DOfTiles[cursorRowIndex, cursorColIndex];
-
-            if (ignorePreviousValueOnMap ||
-                startingTile == null ||
-                mapModel.RegularMapTiles[currentIndex].Equals(startingTile))
-            {
-                paintingTiles.Add(new()
-                {
-                    CellIndex = currentIndex,
-                    BankID = CurrentCursor.BankID,
-                    TileSetID = val.TileSetID,
-                    TileSetOrigin = val.Point
-                });
-            }
-
             cursorColIndex++;
         }
 
