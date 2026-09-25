@@ -1009,7 +1009,8 @@ public class MapViewModel : ItemViewModel
 
         Point positionInCanvas = vO.EventArgs.GetPosition(sender);
 
-        if (CurrentMapFunctionality == MapFunctionality.Paint)
+        if (CurrentMapFunctionality == MapFunctionality.Paint ||
+            CurrentMapFunctionality == MapFunctionality.Erase)
         {
             MapModel? model = GetModel();
 
@@ -1022,7 +1023,14 @@ public class MapViewModel : ItemViewModel
 
             List<TileObject> selectedTiles = [GetSelectedVisualTile(positionInCanvas, model)];
 
-            PaintTiles(selectedTiles, model);
+            if (CurrentMapFunctionality == MapFunctionality.Paint)
+            {
+                PaintTiles(selectedTiles, model);
+            }
+            else if (CurrentMapFunctionality == MapFunctionality.Erase)
+            {
+                EraseTiles(selectedTiles, model);
+            }
         }
         else
         {
@@ -1129,7 +1137,10 @@ public class MapViewModel : ItemViewModel
                 BucketPaint(selectedTiles, clickedOnTile, model);
                 break;
             case MapFunctionality.Erase:
-                EraseTiles(selectedTiles, model.MapID);
+                if (clickedOnTile)
+                {
+                    EraseTiles(selectedTiles, model);
+                }
                 break;
         }
 
@@ -1399,7 +1410,7 @@ public class MapViewModel : ItemViewModel
         }
     }
 
-    private void EraseTiles(List<TileObject> selectedTiles, string mapID)
+    private void EraseTiles(List<TileObject> selectedTiles, MapModel model)
     {
         if (selectedTiles.Count == 0)
         {
@@ -1413,9 +1424,44 @@ public class MapViewModel : ItemViewModel
             return;
         }
 
-        SignalManager.Get<InvalidateMapCacheSignal>().Dispatch([mapID]);
-        SignalManager.Get<RegisterHistoryActionSignal>().Dispatch(new DeleteMapTilesHitoryAction(mapModel, selectedTiles));
-        SignalManager.Get<DeleteMapTilesSignal>().Dispatch(selectedTiles);
+        if (TilesSelectedActive == Visibility.Visible)
+        {
+            // Use the selected rectangle to erase the tiles in it
+
+            Rect rectangle = new(TilesSelectedOriginX, TilesSelectedOriginY, TilesSelectedWidth, TilesSelectedHeight);
+
+            selectedTiles = CheckAreaSelected(rectangle);
+        }
+
+        Tile[] originalTiles;
+
+        if (model.MapType == MapType.Regular)
+        {
+            originalTiles = [.. model.RegularMapTiles];
+        }
+        else
+        {
+            originalTiles = [.. model.AffineMapTiles];
+        }
+
+        int countingTiles = 0;
+
+        foreach (TileObject tile in selectedTiles)
+        {
+            if (originalTiles[tile.Index].IsEmpty())
+            {
+                continue;
+            }
+
+            countingTiles++;
+        }
+
+        if (countingTiles > 0)
+        {
+            SignalManager.Get<InvalidateMapCacheSignal>().Dispatch([model.MapID]);
+            SignalManager.Get<RegisterHistoryActionSignal>().Dispatch(new DeleteMapTilesHitoryAction(mapModel, selectedTiles));
+            SignalManager.Get<DeleteMapTilesSignal>().Dispatch(selectedTiles);
+        }
     }
 
     private void OnInvalidateMapCache(List<string> mapIDs)
@@ -1464,9 +1510,7 @@ public class MapViewModel : ItemViewModel
 
         foreach (TileObject tileObject in selectedTiles)
         {
-            tiles[tileObject.Index].TileSetID = string.Empty;
-            tiles[tileObject.Index].TileSetOrigin = default;
-            tiles[tileObject.Index].BankID = string.Empty;
+            tiles[tileObject.Index].Clean();
         }
 
         ProjectItem?.FileHandler?.Save();

@@ -30,6 +30,7 @@ public class Tile
     {
         TileSetOrigin = default;
         TileSetID = string.Empty;
+        BankID = string.Empty;
     }
 
     public override bool Equals(object? obj)
