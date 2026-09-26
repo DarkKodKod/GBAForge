@@ -620,6 +620,7 @@ public class MapViewModel : ItemViewModel
         SignalManager.Get<ChangeMapPaletteSignal>().Listener += OnChangeMapPalette;
         SignalManager.Get<ResetSelectionAreaSignal>().Listener += OnResetSelectionArea;
         SignalManager.Get<SelectTilesSignal>().Listener += OnSelectTiles;
+        SignalManager.Get<SelectTilesFromRectSignal>().Listener += OnSelectTilesFromRect;
         SignalManager.Get<CheckMapBucketToolSignal>().Listener += OnCheckMapBucketTool;
         SignalManager.Get<CheckMapSelectToolSignal>().Listener += OnCheckMapSelectTool;
         SignalManager.Get<CheckMapEraseToolSignal>().Listener += OnCheckMapEraseTool;
@@ -701,6 +702,7 @@ public class MapViewModel : ItemViewModel
         SignalManager.Get<ChangeMapPaletteSignal>().Listener -= OnChangeMapPalette;
         SignalManager.Get<ResetSelectionAreaSignal>().Listener -= OnResetSelectionArea;
         SignalManager.Get<SelectTilesSignal>().Listener -= OnSelectTiles;
+        SignalManager.Get<SelectTilesFromRectSignal>().Listener -= OnSelectTilesFromRect;
         SignalManager.Get<CheckMapBucketToolSignal>().Listener -= OnCheckMapBucketTool;
         SignalManager.Get<CheckMapSelectToolSignal>().Listener -= OnCheckMapSelectTool;
         SignalManager.Get<CheckMapEraseToolSignal>().Listener -= OnCheckMapEraseTool;
@@ -1257,13 +1259,23 @@ public class MapViewModel : ItemViewModel
         MapImage = mapBitmap;
     }
 
-    private static void SelectTiles(List<TileObject> selectedTiles)
+    private void OnSelectTilesFromRect(Rect rectangle)
+    {
+        List<TileObject> selectedTiles = CheckAreaSelected(rectangle);
+
+        SignalManager.Get<SelectTilesSignal>().Dispatch([.. selectedTiles]);
+    }
+
+    private void SelectTiles(List<TileObject> selectedTiles)
     {
         if (selectedTiles.Count == 0)
         {
             return;
         }
 
+        Rect selectionRect = new(TilesSelectedOriginX, TilesSelectedOriginY, TilesSelectedWidth, TilesSelectedHeight);
+
+        SignalManager.Get<RegisterHistoryActionSignal>().Dispatch(new SelectMapTilesHistoryAction(selectedTiles, TilesSelectedActive, selectionRect));
         SignalManager.Get<SelectTilesSignal>().Dispatch([.. selectedTiles]);
     }
 
