@@ -6,6 +6,7 @@ using GBATool.VOs;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace GBATool.Views
 {
@@ -29,6 +30,7 @@ namespace GBATool.Views
             SignalManager.Get<CheckMapEraseToolSignal>().Listener += OnCheckMapEraseTool;
             SignalManager.Get<CheckMapPaintToolSignal>().Listener += OnCheckMapPaintTool;
             SignalManager.Get<CheckMapMoveToolSignal>().Listener += OnCheckMapMoveTool;
+            SignalManager.Get<UseBitmapAsMoveCursorSignal>().Listener += OnUseBitmapAsMoveCursor;
             #endregion
 
             bankViewer.OnActivate();
@@ -81,6 +83,7 @@ namespace GBATool.Views
             SignalManager.Get<CheckMapEraseToolSignal>().Listener -= OnCheckMapEraseTool;
             SignalManager.Get<CheckMapPaintToolSignal>().Listener -= OnCheckMapPaintTool;
             SignalManager.Get<CheckMapMoveToolSignal>().Listener -= OnCheckMapMoveTool;
+            SignalManager.Get<UseBitmapAsMoveCursorSignal>().Listener -= OnUseBitmapAsMoveCursor;
             #endregion
         }
 
@@ -110,6 +113,7 @@ namespace GBATool.Views
             if (IsMouseInMapBounds())
             {
                 cursorImage.Visibility = Visibility.Visible;
+                cursorMoveImage.Visibility = Visibility.Collapsed;
             }
 
             _currentMapFunctionality = MapFunctionality.BucketPaint;
@@ -120,6 +124,7 @@ namespace GBATool.Views
             if (IsMouseInMapBounds())
             {
                 cursorImage.Visibility = Visibility.Collapsed;
+                cursorMoveImage.Visibility = Visibility.Collapsed;
             }
 
             _currentMapFunctionality = MapFunctionality.Select;
@@ -130,6 +135,7 @@ namespace GBATool.Views
             if (IsMouseInMapBounds())
             {
                 cursorImage.Visibility = Visibility.Collapsed;
+                cursorMoveImage.Visibility = Visibility.Collapsed;
             }
 
             _currentMapFunctionality = MapFunctionality.Erase;
@@ -140,6 +146,7 @@ namespace GBATool.Views
             if (IsMouseInMapBounds())
             {
                 cursorImage.Visibility = Visibility.Visible;
+                cursorMoveImage.Visibility = Visibility.Collapsed;
             }
 
             _currentMapFunctionality = MapFunctionality.Paint;
@@ -150,6 +157,7 @@ namespace GBATool.Views
             if (IsMouseInMapBounds())
             {
                 cursorImage.Visibility = Visibility.Collapsed;
+                cursorMoveImage.Visibility = Visibility.Visible;
             }
 
             _currentMapFunctionality = MapFunctionality.Move;
@@ -158,6 +166,11 @@ namespace GBATool.Views
         private void OnUseBitmapAsCursor(MapPaintCursorVO vo)
         {
             cursorImage.Source = vo.Image;
+        }
+
+        private void OnUseBitmapAsMoveCursor(ImageSource? image)
+        {
+            cursorMoveImage.Source = image;
         }
 
         private void OnTryCaptureMouse(string name)
@@ -195,26 +208,33 @@ namespace GBATool.Views
                 MapFunctionality.Select or MapFunctionality.Erase or MapFunctionality.Move => Visibility.Collapsed,
                 _ => Visibility.Visible
             };
+
+            cursorMoveImage.Visibility = _currentMapFunctionality is MapFunctionality.Move ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void MapCanvas_MouseLeave(object sender, MouseEventArgs e)
         {
             cursorImage.Visibility = Visibility.Collapsed;
+            cursorMoveImage.Visibility = Visibility.Collapsed;
         }
 
         private void MapCanvas_MouseMove(object sender, MouseEventArgs e)
         {
-            if (cursorImage.Source == null)
-            {
-                return;
-            }
-
             if (e.OriginalSource is FrameworkElement parentControl && (parentControl is Canvas or Image))
             {
                 Point positionInCanvas = e.GetPosition(parentControl);
 
-                Canvas.SetLeft(cursorImage, positionInCanvas.X);
-                Canvas.SetTop(cursorImage, positionInCanvas.Y);
+                if (cursorImage.Source != null)
+                {
+                    Canvas.SetLeft(cursorImage, positionInCanvas.X);
+                    Canvas.SetTop(cursorImage, positionInCanvas.Y);
+                }
+
+                if (cursorMoveImage.Source != null)
+                {
+                    Canvas.SetLeft(cursorMoveImage, positionInCanvas.X);
+                    Canvas.SetTop(cursorMoveImage, positionInCanvas.Y);
+                }
             }
         }
     }

@@ -106,6 +106,19 @@ public class BankIndex : INotifyPropertyChanged
     }
 }
 
+public class MapMoveCursor
+{
+    public List<TileObject> Tiles { get; init; } = [];
+
+    public MapMoveCursor(List<TileObject> selectedTiles)
+    {
+        foreach (TileObject item in selectedTiles)
+        {
+            Tiles.Add(item);
+        }
+    }
+}
+
 public class MapViewModel : ItemViewModel
 {
     private Visibility _gridVisibility = Visibility.Visible;
@@ -157,6 +170,7 @@ public class MapViewModel : ItemViewModel
 
     #region get/set
     public MapPaintCursorVO? CurrentCursor { get; set; } = null;
+    public MapMoveCursor? CurrentMoveCursor { get; set; } = null;
 
     public TileObject? SelectedTile
     {
@@ -1003,16 +1017,11 @@ public class MapViewModel : ItemViewModel
             sourceName = fe.Name;
         }
 
-        if (CurrentMapFunctionality != MapFunctionality.Select)
-        {
-            SignalManager.Get<ResetSelectionAreaSignal>().Dispatch(_initialMousePositionInCanvas);
-            SignalManager.Get<SelectTilesSignal>().Dispatch([]);
-        }
-
         Point positionInCanvas = vO.EventArgs.GetPosition(sender);
 
         if (CurrentMapFunctionality == MapFunctionality.Paint ||
-            CurrentMapFunctionality == MapFunctionality.Erase)
+            CurrentMapFunctionality == MapFunctionality.Erase ||
+            CurrentMapFunctionality == MapFunctionality.Move)
         {
             MapModel? model = GetModel();
 
@@ -1021,7 +1030,16 @@ public class MapViewModel : ItemViewModel
                 return;
             }
 
+            // cache the selection for the move functionality
+            bool selectionActive = TilesSelectedActive == Visibility.Visible;
+            Rect cachedSelection = new(TilesSelectedOriginX, TilesSelectedOriginY, TilesSelectedWidth, TilesSelectedHeight);
+
             SignalManager.Get<ResetSelectionAreaSignal>().Dispatch(positionInCanvas);
+
+            if (CurrentMapFunctionality != MapFunctionality.Move)
+            {
+                SignalManager.Get<SelectTilesSignal>().Dispatch([]);
+            }
 
             List<TileObject> selectedTiles = [GetSelectedVisualTile(positionInCanvas, model)];
 
@@ -1033,9 +1051,19 @@ public class MapViewModel : ItemViewModel
             {
                 EraseTiles(selectedTiles, model);
             }
+            else if (CurrentMapFunctionality == MapFunctionality.Move)
+            {
+                MoveTiles(selectedTiles, selectionActive, cachedSelection);
+            }
         }
         else
         {
+            if (CurrentMapFunctionality != MapFunctionality.Select)
+            {
+                SignalManager.Get<ResetSelectionAreaSignal>().Dispatch(_initialMousePositionInCanvas);
+                SignalManager.Get<SelectTilesSignal>().Dispatch([]);
+            }
+
             MouseMoveSelection(positionInCanvas, sourceName);
         }
     }
@@ -1120,6 +1148,8 @@ public class MapViewModel : ItemViewModel
 
         SignalManager.Get<ResetSelectionAreaSignal>().Dispatch(pos);
 
+        bool resetTileSelection = true;
+
         switch (CurrentMapFunctionality)
         {
             default:
@@ -1127,7 +1157,7 @@ public class MapViewModel : ItemViewModel
                 SelectTiles(selectedTiles);
                 break;
             case MapFunctionality.Move:
-                MoveTiles(selectedTiles);
+                resetTileSelection = MoveTilesUp();
                 break;
             case MapFunctionality.Paint:
                 if (clickedOnTile)
@@ -1149,7 +1179,11 @@ public class MapViewModel : ItemViewModel
         if (clickedOnTile && CurrentMapFunctionality != MapFunctionality.Select)
         {
             SignalManager.Get<ResetSelectionAreaSignal>().Dispatch(_initialMousePositionInCanvas);
-            SignalManager.Get<SelectTilesSignal>().Dispatch([]);
+
+            if (resetTileSelection)
+            {
+                SignalManager.Get<SelectTilesSignal>().Dispatch([]);
+            }
         }
 
         _isMovingFromInsideCanvas = false;
@@ -1279,12 +1313,50 @@ public class MapViewModel : ItemViewModel
         SignalManager.Get<SelectTilesSignal>().Dispatch([.. selectedTiles]);
     }
 
-    private static void MoveTiles(List<TileObject> selectedTiles)
+    private bool MoveTilesUp()
+    {
+        if (CurrentMoveCursor != null)
+        {
+            CurrentMoveCursor = null;
+            SignalManager.Get<UseBitmapAsMoveCursorSignal>().Dispatch(null);
+        }
+
+        bool didTheMoveTakePlace = false;
+
+        return didTheMoveTakePlace;
+    }
+
+    private void MoveTiles(List<TileObject> selectedTiles, bool selectionActive, Rect cachedSelection)
     {
         if (selectedTiles.Count == 0)
         {
             return;
         }
+
+        if (CurrentMoveCursor == null && selectionActive) // have a cursor object
+        {
+            MapModel? model = GetModel();
+
+            if (model != null)
+            {
+                WriteableBitmap? mapBitmap = MapUtils.GetFrameImageFromCache(model);
+
+                if (mapBitmap != null)
+                {
+                    WriteableBitmap sourceBitmap = mapBitmap.CloneCurrentValue();
+                    WriteableBitmap cropped = sourceBitmap.Crop(cachedSelection);
+
+                    CurrentMoveCursor = new MapMoveCursor(selectedTiles);
+
+                    SignalManager.Get<UseBitmapAsMoveCursorSignal>().Dispatch(cropped);
+                }
+            }
+        }
+
+        // if (current cursor is not valid)
+        //  return
+
+        // move the current cursor with the mouse position
     }
 
     private void BucketPaint(List<TileObject> selectedTiles, bool clickedOnTile, MapModel mapModel)

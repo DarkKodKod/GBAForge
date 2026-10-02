@@ -124,6 +124,12 @@
                            IsHitTestVisible="False"
                            Stretch="UniformToFill">
                     </Image>
+                    <Image RenderOptions.BitmapScalingMode="NearestNeighbor"
+						   Name="cursorMoveImage"
+						   Visibility="Visible"
+						   IsHitTestVisible="False"
+						   Stretch="UniformToFill">	
+                    </Image>
                 </Canvas>
             </ScrollViewer>
         </Grid>

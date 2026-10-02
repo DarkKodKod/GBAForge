@@ -161,6 +161,7 @@ public class SetColorFromColorPickerSignal : Signal<Control, Color> { }
 public class ReturnTransparentColorFromBankSignal : Signal<Color> { }
 public class TryCreatePaletteElementSignal : Signal<string, List<Color>> { }
 public class UseBitmapAsCursorSignal : Signal<MapPaintCursorVO> { }
+public class UseBitmapAsMoveCursorSignal : Signal<ImageSource?> { }
 #endregion
 
 #region Palettes
