@@ -1053,7 +1053,7 @@ public class MapViewModel : ItemViewModel
             }
             else if (CurrentMapFunctionality == MapFunctionality.Move)
             {
-                MoveTiles(selectedTiles, selectionActive, cachedSelection);
+                MoveTiles(positionInCanvas, selectedTiles, selectionActive, cachedSelection);
             }
         }
         else
@@ -1318,7 +1318,7 @@ public class MapViewModel : ItemViewModel
         if (CurrentMoveCursor != null)
         {
             CurrentMoveCursor = null;
-            SignalManager.Get<UseBitmapAsMoveCursorSignal>().Dispatch(null);
+            SignalManager.Get<UseBitmapAsMoveCursorSignal>().Dispatch(null, 0, 0);
         }
 
         bool didTheMoveTakePlace = false;
@@ -1326,14 +1326,18 @@ public class MapViewModel : ItemViewModel
         return didTheMoveTakePlace;
     }
 
-    private void MoveTiles(List<TileObject> selectedTiles, bool selectionActive, Rect cachedSelection)
+    private void MoveTiles(Point mousePos, List<TileObject> selectedTiles, bool selectionActive, Rect cachedSelection)
     {
         if (selectedTiles.Count == 0)
         {
             return;
         }
 
-        if (CurrentMoveCursor == null && selectionActive) // have a cursor object
+        bool clickedInsideSelection = cachedSelection.Contains(mousePos);
+
+        if (CurrentMoveCursor == null &&
+            selectionActive &&
+            clickedInsideSelection)
         {
             MapModel? model = GetModel();
 
@@ -1348,7 +1352,10 @@ public class MapViewModel : ItemViewModel
 
                     CurrentMoveCursor = new MapMoveCursor(selectedTiles);
 
-                    SignalManager.Get<UseBitmapAsMoveCursorSignal>().Dispatch(cropped);
+                    int distanceFromX = (int)(cachedSelection.X - mousePos.X);
+                    int distanceFromY = (int)(cachedSelection.Y - mousePos.Y);
+
+                    SignalManager.Get<UseBitmapAsMoveCursorSignal>().Dispatch(cropped, distanceFromX, distanceFromY);
                 }
             }
         }

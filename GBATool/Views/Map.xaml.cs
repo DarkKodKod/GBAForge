@@ -16,6 +16,8 @@ namespace GBATool.Views
     public partial class Map : UserControl, ICleanable
     {
         private MapFunctionality _currentMapFunctionality = MapFunctionality.Select;
+        private int _deltaCursorMoveX = 0;
+        private int _deltaCursorMoveY = 0;
 
         public Map()
         {
@@ -168,9 +170,11 @@ namespace GBATool.Views
             cursorImage.Source = vo.Image;
         }
 
-        private void OnUseBitmapAsMoveCursor(ImageSource? image)
+        private void OnUseBitmapAsMoveCursor(ImageSource? image, int deltaX, int deltaY)
         {
             cursorMoveImage.Source = image;
+            _deltaCursorMoveX = deltaX;
+            _deltaCursorMoveY = deltaY;
         }
 
         private void OnTryCaptureMouse(string name)
@@ -224,16 +228,20 @@ namespace GBATool.Views
             {
                 Point positionInCanvas = e.GetPosition(parentControl);
 
+                // remove the decimals
+                int posX = (int)positionInCanvas.X;
+                int posY = (int)positionInCanvas.Y;
+
                 if (cursorImage.Source != null)
                 {
-                    Canvas.SetLeft(cursorImage, positionInCanvas.X);
-                    Canvas.SetTop(cursorImage, positionInCanvas.Y);
+                    Canvas.SetLeft(cursorImage, posX);
+                    Canvas.SetTop(cursorImage, posY);
                 }
 
                 if (cursorMoveImage.Source != null)
                 {
-                    Canvas.SetLeft(cursorMoveImage, positionInCanvas.X);
-                    Canvas.SetTop(cursorMoveImage, positionInCanvas.Y);
+                    Canvas.SetLeft(cursorMoveImage, posX + _deltaCursorMoveX);
+                    Canvas.SetTop(cursorMoveImage, posY + _deltaCursorMoveY);
                 }
             }
         }
