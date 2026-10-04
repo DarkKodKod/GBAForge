@@ -61,7 +61,8 @@
                         Background="DarkGray"
                         MouseEnter="MapCanvas_MouseEnter" 
 						MouseLeave="MapCanvas_MouseLeave"
-						MouseMove="MapCanvas_MouseMove" 
+						MouseMove="MapCanvas_MouseMove"
+                        MouseUp="MapCanvas_MouseUp"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Top">
 					<i:Interaction.Behaviors>

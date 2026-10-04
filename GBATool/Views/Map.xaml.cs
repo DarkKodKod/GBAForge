@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Numerics;
 
 namespace GBATool.Views
 {
@@ -18,6 +19,8 @@ namespace GBATool.Views
         private MapFunctionality _currentMapFunctionality = MapFunctionality.Select;
         private int _deltaCursorMoveX = 0;
         private int _deltaCursorMoveY = 0;
+        private Vector2 _initialCursorMovePos = Vector2.Zero;
+        private bool _cursorMoveImagePosSet = false;
 
         public Map()
         {
@@ -175,6 +178,11 @@ namespace GBATool.Views
             cursorMoveImage.Source = image;
             _deltaCursorMoveX = deltaX;
             _deltaCursorMoveY = deltaY;
+
+            if (image == null)
+            {
+                _cursorMoveImagePosSet = false;
+            }
         }
 
         private void OnTryCaptureMouse(string name)
@@ -213,7 +221,10 @@ namespace GBATool.Views
                 _ => Visibility.Visible
             };
 
-            cursorMoveImage.Visibility = _currentMapFunctionality is MapFunctionality.Move ? Visibility.Visible : Visibility.Collapsed;
+            if (_currentMapFunctionality is not MapFunctionality.Move)
+            {
+                cursorMoveImage.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void MapCanvas_MouseLeave(object sender, MouseEventArgs e)
@@ -238,12 +249,44 @@ namespace GBATool.Views
                     Canvas.SetTop(cursorImage, posY);
                 }
 
-                if (cursorMoveImage.Source != null)
+                if (_currentMapFunctionality is MapFunctionality.Move &&
+                    cursorMoveImage.Source != null)
                 {
-                    Canvas.SetLeft(cursorMoveImage, posX + _deltaCursorMoveX);
-                    Canvas.SetTop(cursorMoveImage, posY + _deltaCursorMoveY);
-                }
+                    int newPosX = posX + _deltaCursorMoveX;
+                    int newPosY = posY + _deltaCursorMoveY;
+                    
+                    Canvas.SetLeft(cursorMoveImage, newPosX);
+                    Canvas.SetTop(cursorMoveImage, newPosY);
+
+                    if (!_cursorMoveImagePosSet)
+                    {
+                        int currentPosX = (int)Canvas.GetLeft(cursorMoveImage);
+                        int currentPosY = (int)Canvas.GetTop(cursorMoveImage);
+
+                        _initialCursorMovePos = new(currentPosX, currentPosY);
+
+                        _cursorMoveImagePosSet = true;
+                    }
+                    else
+                    {
+                        Vector2 currentCursorMove = new(newPosX, newPosY);                        
+                        
+                        float distance = Vector2.DistanceSquared(currentCursorMove, _initialCursorMovePos);
+                        
+                        cursorMoveImage.Visibility = distance > 40 ? Visibility.Visible : Visibility.Collapsed;
+                    }
+                }   
             }
+        }
+
+        private void MapCanvas_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (cursorMoveImage.Source != null)
+            {
+                cursorMoveImage.Visibility = Visibility.Collapsed;
+            }
+
+            _cursorMoveImagePosSet = false;
         }
     }
 }
