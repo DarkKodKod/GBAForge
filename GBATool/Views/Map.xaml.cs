@@ -3,11 +3,11 @@ using GBATool.Enums;
 using GBATool.Signals;
 using GBATool.Utils;
 using GBATool.VOs;
+using System.Numerics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Numerics;
 
 namespace GBATool.Views
 {
@@ -254,9 +254,12 @@ namespace GBATool.Views
                 {
                     int newPosX = posX + _deltaCursorMoveX;
                     int newPosY = posY + _deltaCursorMoveY;
-                    
-                    Canvas.SetLeft(cursorMoveImage, newPosX);
-                    Canvas.SetTop(cursorMoveImage, newPosY);
+
+                    int roundedNextMultipleX = (newPosX + (MapUtils.CellSize - 1)) & ~(MapUtils.CellSize - 1);
+                    int roundedNextMultipleY = (newPosY + (MapUtils.CellSize - 1)) & ~(MapUtils.CellSize - 1);
+
+                    Canvas.SetLeft(cursorMoveImage, roundedNextMultipleX);
+                    Canvas.SetTop(cursorMoveImage, roundedNextMultipleY);
 
                     if (!_cursorMoveImagePosSet)
                     {
@@ -269,13 +272,13 @@ namespace GBATool.Views
                     }
                     else
                     {
-                        Vector2 currentCursorMove = new(newPosX, newPosY);                        
-                        
+                        Vector2 currentCursorMove = new(newPosX, newPosY);
+
                         float distance = Vector2.DistanceSquared(currentCursorMove, _initialCursorMovePos);
-                        
-                        cursorMoveImage.Visibility = distance > 40 ? Visibility.Visible : Visibility.Collapsed;
+
+                        cursorMoveImage.Visibility = distance > 10 ? Visibility.Visible : Visibility.Collapsed;
                     }
-                }   
+                }
             }
         }
 
