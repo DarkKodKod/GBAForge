@@ -35,7 +35,7 @@ public class DeleteElementCommand : ItemSelectedCommand
 
         if (result == MessageBoxResult.Yes)
         {
-            SignalManager.Get<RegisterHistoryActionSignal>().Dispatch(new DeleteProjectItemHitoryAction(ItemSelected));
+            SignalManager.Get<RegisterHistoryActionSignal>().Dispatch(new DeleteProjectItemHistoryAction(ItemSelected));
 
             ProjectItemFileSystem.DeteElement(ItemSelected);
 

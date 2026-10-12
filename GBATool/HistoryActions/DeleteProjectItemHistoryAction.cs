@@ -6,7 +6,7 @@ using GBATool.ViewModels;
 
 namespace GBATool.HistoryActions;
 
-public class DeleteProjectItemHitoryAction(ProjectItem item) : IHistoryAction
+public class DeleteProjectItemHistoryAction(ProjectItem item) : IHistoryAction
 {
     private readonly ProjectItem _item = item;
 

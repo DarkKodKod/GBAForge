@@ -3,7 +3,6 @@ using GBATool.Enums;
 using GBATool.Signals;
 using GBATool.Utils;
 using GBATool.VOs;
-using System.Numerics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -19,8 +18,6 @@ namespace GBATool.Views
         private MapFunctionality _currentMapFunctionality = MapFunctionality.Select;
         private int _deltaCursorMoveX = 0;
         private int _deltaCursorMoveY = 0;
-        private Vector2 _initialCursorMovePos = Vector2.Zero;
-        private bool _cursorMoveImagePosSet = false;
 
         public Map()
         {
@@ -175,13 +172,16 @@ namespace GBATool.Views
 
         private void OnUseBitmapAsMoveCursor(ImageSource? image, int deltaX, int deltaY)
         {
+            cursorMoveImage.Visibility = Visibility.Hidden;
+
             cursorMoveImage.Source = image;
             _deltaCursorMoveX = deltaX;
             _deltaCursorMoveY = deltaY;
 
-            if (image == null)
+            if (image != null)
             {
-                _cursorMoveImagePosSet = false;
+                Canvas.SetLeft(cursorMoveImage, 0);
+                Canvas.SetTop(cursorMoveImage, 0);
             }
         }
 
@@ -261,23 +261,9 @@ namespace GBATool.Views
                     Canvas.SetLeft(cursorMoveImage, roundedNextMultipleX);
                     Canvas.SetTop(cursorMoveImage, roundedNextMultipleY);
 
-                    if (!_cursorMoveImagePosSet)
-                    {
-                        int currentPosX = (int)Canvas.GetLeft(cursorMoveImage);
-                        int currentPosY = (int)Canvas.GetTop(cursorMoveImage);
+                    cursorMoveImage.Visibility = Visibility.Visible;
 
-                        _initialCursorMovePos = new(currentPosX, currentPosY);
-
-                        _cursorMoveImagePosSet = true;
-                    }
-                    else
-                    {
-                        Vector2 currentCursorMove = new(newPosX, newPosY);
-
-                        float distance = Vector2.DistanceSquared(currentCursorMove, _initialCursorMovePos);
-
-                        cursorMoveImage.Visibility = distance > 10 ? Visibility.Visible : Visibility.Collapsed;
-                    }
+                    SignalManager.Get<NewMoveTilesMapPositionSignal>().Dispatch(new() { X = roundedNextMultipleX, Y = roundedNextMultipleY });
                 }
             }
         }
@@ -288,8 +274,6 @@ namespace GBATool.Views
             {
                 cursorMoveImage.Visibility = Visibility.Collapsed;
             }
-
-            _cursorMoveImagePosSet = false;
         }
     }
 }
