@@ -1,5 +1,6 @@
 ﻿using ArchitectureLibrary.History;
 using ArchitectureLibrary.Signals;
+using GBATool.Enums;
 using GBATool.Models;
 using GBATool.Signals;
 using System.Collections.Generic;
@@ -21,24 +22,33 @@ public class PaintMapTilesHistoryAction : IHistoryAction
 
         _mapID = mapModel.MapID;
 
-        Tile[] tiles = [.. mapModel.RegularMapTiles];
+        Tile[] tiles;
 
-        foreach (Tile tileObject in paintingTiles)
+        if (mapModel.MapType == MapType.Regular)
+        {
+            tiles = [.. mapModel.RegularMapTiles];
+        }
+        else
+        {
+            tiles = [.. mapModel.AffineMapTiles];
+        }
+
+        foreach (Tile tile in paintingTiles)
         {
             _bucketTiles.Add(new()
             {
-                CellIndex = tileObject.CellIndex,
-                BankID = tileObject.BankID,
-                TileSetID = tileObject.TileSetID,
-                TileSetOrigin = tileObject.TileSetOrigin
+                CellIndex = tile.CellIndex,
+                BankID = tile.BankID,
+                TileSetID = tile.TileSetID,
+                TileSetOrigin = tile.TileSetOrigin
             });
 
             _originalTiles.Add(new()
             {
-                CellIndex = tileObject.CellIndex,
-                BankID = tiles[tileObject.CellIndex].BankID,
-                TileSetID = tiles[tileObject.CellIndex].TileSetID,
-                TileSetOrigin = tiles[tileObject.CellIndex].TileSetOrigin
+                CellIndex = tile.CellIndex,
+                BankID = tiles[tile.CellIndex].BankID,
+                TileSetID = tiles[tile.CellIndex].TileSetID,
+                TileSetOrigin = tiles[tile.CellIndex].TileSetOrigin
             });
         }
     }

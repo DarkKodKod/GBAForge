@@ -1374,12 +1374,12 @@ public class MapViewModel : ItemViewModel
                     {
                         colIndex = 0;
                         rowIndex++;
-                        
+
                         currentIndex = _newCellIndex + (mapSizeWidth * rowIndex);
                     }
                 }
 
-                if (paintingTiles.Count > 0) 
+                if (paintingTiles.Count > 0)
                 {
                     didTheMoveTakePlace = true;
                     SignalManager.Get<InvalidateMapCacheSignal>().Dispatch([model.MapID]);
