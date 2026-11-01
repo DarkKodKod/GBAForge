@@ -109,9 +109,12 @@ public class BankIndex : INotifyPropertyChanged
 public class MapMoveCursor
 {
     public List<TileObject> Tiles { get; init; } = [];
+    public int TilesWidth { get; init; }
 
-    public MapMoveCursor(List<TileObject> selectedTiles)
+    public MapMoveCursor(List<TileObject> selectedTiles, int tilesWidth)
     {
+        TilesWidth = tilesWidth;
+
         foreach (TileObject item in selectedTiles)
         {
             Tiles.Add(item);
@@ -646,6 +649,7 @@ public class MapViewModel : ItemViewModel
         SignalManager.Get<InvalidateMapCacheSignal>().Listener += OnInvalidateMapCache;
         SignalManager.Get<PaintMapTilesSignal>().Listener += OnPaintMapTiles;
         SignalManager.Get<NewMoveTilesMapPositionSignal>().Listener += OnNewMoveTilesMapPosition;
+        SignalManager.Get<LoadMapImageSignal>().Listener += OnLoadMapImage;
         #endregion
 
         MapModel? model = GetModel();
@@ -729,6 +733,7 @@ public class MapViewModel : ItemViewModel
         SignalManager.Get<InvalidateMapCacheSignal>().Listener -= OnInvalidateMapCache;
         SignalManager.Get<PaintMapTilesSignal>().Listener -= OnPaintMapTiles;
         SignalManager.Get<NewMoveTilesMapPositionSignal>().Listener -= OnNewMoveTilesMapPosition;
+        SignalManager.Get<LoadMapImageSignal>().Listener += OnLoadMapImage;
         #endregion
 
         base.OnDeactivate();
@@ -1062,7 +1067,7 @@ public class MapViewModel : ItemViewModel
             }
             else if (CurrentMapFunctionality == MapFunctionality.Move)
             {
-                MoveTiles(positionInCanvas, selectedTiles, selectionActive, cachedSelection);
+                MoveTiles(positionInCanvas, selectionActive, cachedSelection);
             }
         }
         else
@@ -1284,7 +1289,7 @@ public class MapViewModel : ItemViewModel
         {
             SignalManager.Get<InvalidateMapCacheSignal>().Dispatch([model.MapID]);
             SignalManager.Get<RegisterHistoryActionSignal>().Dispatch(new PaintMapTilesHistoryAction(model, paintingTiles));
-            SignalManager.Get<PaintMapTilesSignal>().Dispatch(paintingTiles);
+            SignalManager.Get<PaintMapTilesSignal>().Dispatch(paintingTiles, true);
         }
     }
 
@@ -1330,19 +1335,59 @@ public class MapViewModel : ItemViewModel
         {
             if (CurrentMoveCursor.Tiles.Count > 0)
             {
-                if (_newCellIndex == 0)
+                Tile[] originalTiles;
+                int mapSizeWidth;
+
+                if (model.MapType == MapType.Regular)
                 {
-                    ///
+                    mapSizeWidth = MapUtils.GetRegularMapSizeWidth(model.BckgrRegularSize);
+                    originalTiles = [.. model.RegularMapTiles];
+                }
+                else
+                {
+                    mapSizeWidth = MapUtils.GetAffineMapSize(model.BckgrAffineSize);
+                    originalTiles = [.. model.AffineMapTiles];
                 }
 
+                List<Tile> paintingTiles = [];
+                List<TileObject> deletedTiles = [];
 
+                int colIndex = 0;
+                int rowIndex = 0;
+                int currentIndex = _newCellIndex;
 
-                didTheMoveTakePlace = false;
+                foreach (TileObject tileObject in CurrentMoveCursor.Tiles)
+                {
+                    deletedTiles.Add(tileObject);
 
-                SignalManager.Get<InvalidateMapCacheSignal>().Dispatch([model.MapID]);
-                SignalManager.Get<RegisterHistoryActionSignal>().Dispatch(new MoveMapTilesHistoryAction());
-                SignalManager.Get<DeleteMapTilesSignal>().Dispatch([]);
-                SignalManager.Get<PaintMapTilesSignal>().Dispatch([]);
+                    paintingTiles.Add(new()
+                    {
+                        CellIndex = currentIndex + colIndex,
+                        BankID = originalTiles[tileObject.Index].BankID,
+                        TileSetID = originalTiles[tileObject.Index].TileSetID,
+                        TileSetOrigin = originalTiles[tileObject.Index].TileSetOrigin
+                    });
+
+                    colIndex++;
+
+                    if (colIndex >= CurrentMoveCursor.TilesWidth)
+                    {
+                        colIndex = 0;
+                        rowIndex++;
+                        
+                        currentIndex = _newCellIndex + (mapSizeWidth * rowIndex);
+                    }
+                }
+
+                if (paintingTiles.Count > 0) 
+                {
+                    didTheMoveTakePlace = true;
+                    SignalManager.Get<InvalidateMapCacheSignal>().Dispatch([model.MapID]);
+                    SignalManager.Get<RegisterHistoryActionSignal>().Dispatch(new MoveMapTilesHistoryAction(model, paintingTiles, deletedTiles));
+                    SignalManager.Get<DeleteMapTilesSignal>().Dispatch(deletedTiles, false);
+                    SignalManager.Get<PaintMapTilesSignal>().Dispatch(paintingTiles, false);
+                    SignalManager.Get<LoadMapImageSignal>().Dispatch();
+                }
             }
 
             CurrentMoveCursor = null;
@@ -1364,8 +1409,10 @@ public class MapViewModel : ItemViewModel
         _newCellIndex = MapUtils.GetCellIndexFromPoint(newPosition, model);
     }
 
-    private void MoveTiles(Point mousePos, List<TileObject> selectedTiles, bool selectionActive, Rect cachedSelection)
+    private void MoveTiles(Point mousePos, bool selectionActive, Rect cachedSelection)
     {
+        List<TileObject> selectedTiles = CheckAreaSelected(cachedSelection);
+
         if (selectedTiles.Count == 0)
         {
             return;
@@ -1388,7 +1435,7 @@ public class MapViewModel : ItemViewModel
                     WriteableBitmap sourceBitmap = mapBitmap.CloneCurrentValue();
                     WriteableBitmap cropped = sourceBitmap.Crop(cachedSelection);
 
-                    CurrentMoveCursor = new MapMoveCursor(selectedTiles);
+                    CurrentMoveCursor = new MapMoveCursor(selectedTiles, cropped.PixelWidth / MapUtils.CellSize);
 
                     int distanceFromX = (int)(cachedSelection.X - mousePos.X);
                     int distanceFromY = (int)(cachedSelection.Y - mousePos.Y);
@@ -1530,7 +1577,7 @@ public class MapViewModel : ItemViewModel
         {
             SignalManager.Get<InvalidateMapCacheSignal>().Dispatch([mapModel.MapID]);
             SignalManager.Get<RegisterHistoryActionSignal>().Dispatch(new BucketMapTilesHistoryAction(mapModel, paintingTiles));
-            SignalManager.Get<PaintMapTilesSignal>().Dispatch(paintingTiles);
+            SignalManager.Get<PaintMapTilesSignal>().Dispatch(paintingTiles, true);
         }
     }
 
@@ -1584,7 +1631,7 @@ public class MapViewModel : ItemViewModel
         {
             SignalManager.Get<InvalidateMapCacheSignal>().Dispatch([model.MapID]);
             SignalManager.Get<RegisterHistoryActionSignal>().Dispatch(new DeleteMapTilesHitoryAction(mapModel, selectedTiles));
-            SignalManager.Get<DeleteMapTilesSignal>().Dispatch(selectedTiles);
+            SignalManager.Get<DeleteMapTilesSignal>().Dispatch(selectedTiles, true);
         }
     }
 
@@ -1596,7 +1643,7 @@ public class MapViewModel : ItemViewModel
         }
     }
 
-    private void OnPaintMapTiles(List<Tile> tilesToPaint)
+    private void OnPaintMapTiles(List<Tile> tilesToPaint, bool shouldLoadMap)
     {
         MapModel? mapModel = GetModel();
 
@@ -1617,10 +1664,18 @@ public class MapViewModel : ItemViewModel
 
         ProjectItem?.FileHandler?.Save();
 
+        if (shouldLoadMap)
+        {
+            LoadMapImage();
+        }
+    }
+
+    private void OnLoadMapImage()
+    {
         LoadMapImage();
     }
 
-    private void OnDeleteMapTiles(List<TileObject> selectedTiles)
+    private void OnDeleteMapTiles(List<TileObject> selectedTiles, bool shouldLoadMap)
     {
         MapModel? mapModel = GetModel();
 
@@ -1639,7 +1694,10 @@ public class MapViewModel : ItemViewModel
 
         ProjectItem?.FileHandler?.Save();
 
-        LoadMapImage();
+        if (shouldLoadMap)
+        {
+            LoadMapImage();
+        }
     }
 
     private void OnMouseDownEvent(MouseButtonVO vO)

@@ -191,8 +191,9 @@ public class CheckMapSelectToolSignal : Signal { }
 public class CheckMapEraseToolSignal : Signal { }
 public class CheckMapPaintToolSignal : Signal { }
 public class CheckMapMoveToolSignal : Signal { }
-public class DeleteMapTilesSignal : Signal<List<TileObject>> { }
-public class PaintMapTilesSignal : Signal<List<Tile>> { }
+public class DeleteMapTilesSignal : Signal<List<TileObject>, bool> { }
+public class PaintMapTilesSignal : Signal<List<Tile>, bool> { }
+public class LoadMapImageSignal : Signal { }
 public class InvalidateMapCacheSignal : Signal<List<string>> { }
 public class NewMoveTilesMapPositionSignal : Signal<Point> { }
 #endregion

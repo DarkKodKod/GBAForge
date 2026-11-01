@@ -48,7 +48,7 @@ public class BucketMapTilesHistoryAction : IHistoryAction
         if (_bucketTiles.Count > 0)
         {
             SignalManager.Get<InvalidateMapCacheSignal>().Dispatch([_mapID]);
-            SignalManager.Get<PaintMapTilesSignal>().Dispatch(_bucketTiles);
+            SignalManager.Get<PaintMapTilesSignal>().Dispatch(_bucketTiles, true);
         }
     }
 
@@ -57,7 +57,7 @@ public class BucketMapTilesHistoryAction : IHistoryAction
         if (_originalTiles.Count > 0)
         {
             SignalManager.Get<InvalidateMapCacheSignal>().Dispatch([_mapID]);
-            SignalManager.Get<PaintMapTilesSignal>().Dispatch(_originalTiles);
+            SignalManager.Get<PaintMapTilesSignal>().Dispatch(_originalTiles, true);
         }
     }
 }

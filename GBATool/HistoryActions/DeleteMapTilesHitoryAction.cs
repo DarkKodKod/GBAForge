@@ -43,7 +43,7 @@ public class DeleteMapTilesHitoryAction : IHistoryAction
         if (_selectedTiles.Count > 0)
         {
             SignalManager.Get<InvalidateMapCacheSignal>().Dispatch([_mapID]);
-            SignalManager.Get<DeleteMapTilesSignal>().Dispatch(_selectedTiles);
+            SignalManager.Get<DeleteMapTilesSignal>().Dispatch(_selectedTiles, true);
         }
     }
 
@@ -52,7 +52,7 @@ public class DeleteMapTilesHitoryAction : IHistoryAction
         if (_originalTiles.Count > 0)
         {
             SignalManager.Get<InvalidateMapCacheSignal>().Dispatch([_mapID]);
-            SignalManager.Get<PaintMapTilesSignal>().Dispatch(_originalTiles);
+            SignalManager.Get<PaintMapTilesSignal>().Dispatch(_originalTiles, true);
         }
     }
 }
