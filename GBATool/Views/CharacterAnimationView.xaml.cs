@@ -34,6 +34,8 @@ public partial class CharacterAnimationView : UserControl
 
         SignalManager.Get<NewAnimationFrameSignal>().Listener += OnNewAnimationFrame;
         SignalManager.Get<DeleteAnimationFrameSignal>().Listener += OnDeleteAnimationFrame;
+        SignalManager.Get<MoveFrameBackwardSignal>().Listener += OnMoveFrameBackward;
+        SignalManager.Get<MoveFrameForwardSignal>().Listener += OnMoveFrameForward;
         SignalManager.Get<InformationToCorrectlyDisplayTheMetaSpriteCenteredSignal>().Listener += OnInformationToCorrectlyDisplayTheMetaSpriteCentered;
     }
 
@@ -41,10 +43,88 @@ public partial class CharacterAnimationView : UserControl
     {
         SignalManager.Get<NewAnimationFrameSignal>().Listener -= OnNewAnimationFrame;
         SignalManager.Get<DeleteAnimationFrameSignal>().Listener -= OnDeleteAnimationFrame;
+        SignalManager.Get<MoveFrameBackwardSignal>().Listener -= OnMoveFrameBackward;
+        SignalManager.Get<MoveFrameForwardSignal>().Listener -= OnMoveFrameForward;
         SignalManager.Get<InformationToCorrectlyDisplayTheMetaSpriteCenteredSignal>().Listener -= OnInformationToCorrectlyDisplayTheMetaSpriteCentered;
 
         FrameViewList.Clear();
         spFrames.Children.RemoveRange(0, spFrames.Children.Count - 1);
+    }
+
+    private void OnMoveFrameBackward(string animationID, int frameIndex)
+    {
+        if (DataContext is not CharacterAnimationViewModel viewModel)
+        {
+            return;
+        }
+
+        if (viewModel.TabID != animationID)
+        {
+            return;
+        }
+
+        if (frameIndex > 0 && frameIndex < spFrames.Children.Count)
+        {
+            UIElement element = spFrames.Children[frameIndex];
+
+            spFrames.Children.RemoveAt(frameIndex);
+
+            spFrames.Children.Insert(frameIndex - 1, element);
+        }
+
+        if (frameIndex > 0 && frameIndex < FrameViewList.Count)
+        {
+            (FrameViewList[frameIndex], FrameViewList[frameIndex - 1]) = (FrameViewList[frameIndex - 1], FrameViewList[frameIndex]);
+        }
+
+        int index = 0;
+
+        // Adjust the index for all the remaining chidren
+        foreach (object item in spFrames.Children)
+        {
+            if (item is CharacterFrameView view)
+            {
+                view.FrameIndex = index++;
+            }
+        }
+    }
+
+    private void OnMoveFrameForward(string animationID, int frameIndex)
+    {
+        if (DataContext is not CharacterAnimationViewModel viewModel)
+        {
+            return;
+        }
+
+        if (viewModel.TabID != animationID)
+        {
+            return;
+        }
+
+        if (frameIndex >= 0 && frameIndex < spFrames.Children.Count - 1)
+        {
+            UIElement element = spFrames.Children[frameIndex];
+
+            spFrames.Children.RemoveAt(frameIndex);
+
+            spFrames.Children.Insert(frameIndex + 1, element);
+        }
+
+        if (frameIndex >= 0 && frameIndex < FrameViewList.Count - 1)
+        {
+            (FrameViewList[frameIndex], FrameViewList[frameIndex + 1]) = (FrameViewList[frameIndex + 1], FrameViewList[frameIndex]);
+        }
+
+        int index = 0;
+
+        // Adjust the index for all the remaining chidren
+        foreach (object item in spFrames.Children)
+        {
+            if (item is CharacterFrameView view)
+            {
+                view.FrameIndex = index++;
+            }
+        }
     }
 
     private void OnDeleteAnimationFrame(string animationID, int frameIndex)

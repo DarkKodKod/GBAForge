@@ -2,6 +2,7 @@
 using ArchitectureLibrary.Signals;
 using GBATool.Models;
 using GBATool.Signals;
+using System.Collections.Generic;
 
 namespace GBATool.Commands.Character;
 
@@ -27,7 +28,7 @@ public class DeleteAnimationFrameCommand : Command
         if (model.Animations.TryGetValue(animationID, out CharacterAnimation? animation))
         {
             int frameIndex = 0;
-            foreach (var item in animation.Frames)
+            foreach (KeyValuePair<string, FrameModel> item in animation.Frames)
             {
                 if (item.Value.ID == frameID)
                 {

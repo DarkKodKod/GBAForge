@@ -41,6 +41,25 @@
                     <Image Width="16" Height="16" Source="/resources/delete.png"/>
                 </MenuItem.Icon>
             </MenuItem>
+            <Separator/>
+            <MenuItem Header="Move Frame Backward" Command="{Binding MoveFrameBackwardCommand}">
+                <MenuItem.CommandParameter>
+                    <MultiBinding Converter="{StaticResource parametersConverter}">
+                        <Binding Path="AnimationID" />
+                        <Binding Path="FrameID" />
+                        <Binding Path="FileHandler" />
+                    </MultiBinding>
+                </MenuItem.CommandParameter>
+            </MenuItem>
+            <MenuItem Header="Move Frame Fordward" Command="{Binding MoveFrameForwardCommand}">
+                <MenuItem.CommandParameter>
+                    <MultiBinding Converter="{StaticResource parametersConverter}">
+                        <Binding Path="AnimationID" />
+                        <Binding Path="FrameID" />
+                        <Binding Path="FileHandler" />
+                    </MultiBinding>
+                </MenuItem.CommandParameter>
+            </MenuItem>
         </ContextMenu>
     </UserControl.Resources>
     <Button Width="150" Command="{Binding SwitchCharacterFrameViewCommand}" 

@@ -124,6 +124,8 @@ public partial class CharacterFrameView : UserControl, INotifyPropertyChanged
     public DeleteAnimationFrameCommand DeleteAnimationFrameCommand { get; } = new();
     public DuplicateAnimationFrameCommand DuplicateAnimationFrameCommand { get; } = new();
     public InsertAnimationHeldFrameCommand InsertAnimationHeldFrameCommand { get; } = new();
+    public MoveFrameForwardCommand MoveFrameForwardCommand { get; } = new();
+    public MoveFrameBackwardCommand MoveFrameBackwardCommand { get; } = new();
     #endregion
 
     public event PropertyChangedEventHandler? PropertyChanged;

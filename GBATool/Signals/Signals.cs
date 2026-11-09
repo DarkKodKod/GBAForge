@@ -109,6 +109,8 @@ public class SwitchCharacterFrameViewSignal : Signal<string, string, int> { }
 public class UpdateCharacterImageSignal : Signal { }
 public class SwitchAnimationTabSignal : Signal<string> { }
 public class NewAnimationFrameSignal : Signal<string, string, int, bool> { }
+public class MoveFrameBackwardSignal : Signal<string, int> { }
+public class MoveFrameForwardSignal : Signal<string, int> { }
 public class DeleteAnimationFrameSignal : Signal<string, int> { }
 public class SelectFrameElementsSignal : Signal<SpriteControlVO[], CollisionControlVO[]> { }
 public class ResetFrameSpritesSelectionAreaSignal : Signal<Point> { }
