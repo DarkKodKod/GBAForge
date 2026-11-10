@@ -60,7 +60,7 @@ public static class BankUtils
     public const int SizeOfCellInPixels = 8;
     public const int MaxTextureCellsWidth = 32;
 
-    public static BankImageMetaData CreateImage(BankModel bankModel, bool foce2DView, int canvasWidth, int canvasHeight)
+    public static BankImageMetaData CreateImage(BankModel bankModel, bool force2DView, int canvasWidth, int canvasHeight)
     {
         BankImageMetaData metaData = new();
 
@@ -70,7 +70,7 @@ public static class BankUtils
 
         int index = 0;
 
-        bool is1DImage = !foce2DView && (bankModel.IsBackground || (projectModel.SpritePatternFormat == SpritePattern.Format1D));
+        bool is1DImage = !force2DView && (bankModel.IsBackground || (projectModel.SpritePatternFormat == SpritePattern.Format1D));
 
         int widthNextPosition = 0;
         int heightNextPosition = 0;

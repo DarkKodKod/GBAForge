@@ -239,7 +239,7 @@ public class BanksViewModel : ItemViewModel
 
         LoadTileSetSprites();
 
-        model.CleanUpDeletedSprites();
+        _ = model.CleanUpDeletedSprites();
 
         string? name = ProjectItem?.FileHandler?.Name;
 
@@ -350,8 +350,6 @@ public class BanksViewModel : ItemViewModel
             return;
 
         ProjectItem?.FileHandler?.Save();
-
-        _ = BankModel.MetaDataCache.TryRemove(bankID, out _);
     }
 
     private void OnReloadBankImage()

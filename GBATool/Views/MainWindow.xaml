@@ -296,6 +296,8 @@
                     </MenuItem.CommandParameter>
                 </MenuItem>
                 <Separator/>
+                <MenuItem Header="_Clean up Project" Command="{Binding CleanupProjectCommand}"/>
+                <Separator/>
                 <MenuItem Header="_Build Project..." InputGestureText="F5" Command="{Binding OpenBuildProjectCommand}">
                     <MenuItem.Icon>
                         <Image Width="16" Height="16" Source="/resources/build.png">

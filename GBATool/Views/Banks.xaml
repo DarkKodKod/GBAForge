@@ -117,6 +117,8 @@
                             <MultiBinding Converter="{StaticResource parametersConverter}">
                                 <Binding Path="SelectedSpriteFromBank" ElementName="bankViewerView"/>
                                 <Binding Path="BankSprites"/>
+                                <Binding Path="BankModel" />
+                                <Binding Path="Force2DView" ElementName="bankViewerView"/>
                             </MultiBinding>
                         </Button.CommandParameter>
                         <Image Width="16" Height="16" 
@@ -146,6 +148,8 @@
                             <MultiBinding Converter="{StaticResource parametersConverter}">
                                 <Binding Path="SelectedSpriteFromBank" ElementName="bankViewerView"/>
                                 <Binding Path="BankSprites"/>
+                                <Binding Path="BankModel" />
+                                <Binding Path="Force2DView" ElementName="bankViewerView"/>
                             </MultiBinding>
                         </Button.CommandParameter>
                         <Image Width="16" Height="16" 
@@ -168,7 +172,14 @@
                             </Image.Style>
                         </Image>
                     </Button>
-                    <Button Width="40" Command="{Binding DeleteBankSpriteCommand}" CommandParameter="{Binding Path=SelectedSpriteFromBank, ElementName=bankViewerView}">
+                    <Button Width="40" Command="{Binding DeleteBankSpriteCommand}">
+                        <Button.CommandParameter>
+                            <MultiBinding Converter="{StaticResource parametersConverter}">
+                                <Binding Path="SelectedSpriteFromBank" ElementName="bankViewerView"/>
+                                <Binding Path="BankModel" />
+                                <Binding Path="Force2DView" ElementName="bankViewerView"/>
+                            </MultiBinding>
+                        </Button.CommandParameter>
                         <Image Width="16" Height="16" 
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Center"
@@ -227,6 +238,7 @@
                     <MultiBinding Converter="{StaticResource parametersConverter}">
                         <Binding Path="BankModel" />
                         <Binding Path="SelectedSprite" ElementName="slSprites"/>
+                        <Binding Path="Force2DView" ElementName="bankViewerView"/>
                     </MultiBinding>
                 </Button.CommandParameter>
                 <Image Width="32" Height="32" 

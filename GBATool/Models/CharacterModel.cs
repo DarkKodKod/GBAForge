@@ -1,5 +1,6 @@
 ﻿using ArchitectureLibrary.Utils;
 using GBATool.Enums;
+using GBATool.FileSystem;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using System.Windows;
@@ -107,4 +108,48 @@ public class CharacterModel : AFileModel
     public int PaletteIndex { get; set; }
     public Priority Priority { get; set; } = Priority.Highest;
     public Dictionary<string, CharacterAnimation> Animations { get; set; } = [];
+
+    public bool CleanUp()
+    {
+        bool somethingRemoved = false;
+
+        foreach (KeyValuePair<string, CharacterAnimation> animation in Animations)
+        {
+            foreach (KeyValuePair<string, FrameModel> frame in animation.Value.Frames)
+            {
+                FrameModel frameModel = frame.Value;
+
+                BankModel? bankModel = ProjectFiles.GetModel<BankModel>(frameModel.BankID);
+
+                if (bankModel == null)
+                {
+                    continue;
+                }
+
+                List<string> idsToRemove = [];
+
+                foreach (KeyValuePair<string, CharacterSprite> tile in frameModel.Tiles)
+                {
+                    CharacterSprite sprite = tile.Value;
+
+                    int index = 0;
+
+                    if (!bankModel.GetTileIndex(sprite.SpriteID, ref index))
+                    {
+                        // this sprite does not exist in the bank anymore
+                        idsToRemove.Add(tile.Key);
+                    }
+                }
+
+                foreach (string id in idsToRemove)
+                {
+                    _ = frameModel.Tiles.Remove(id);
+                }
+
+                somethingRemoved |= idsToRemove.Count > 0;
+            }
+        }
+
+        return somethingRemoved;
+    }
 }

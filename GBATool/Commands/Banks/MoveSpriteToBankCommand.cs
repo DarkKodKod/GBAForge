@@ -40,6 +40,7 @@ public class MoveSpriteToBankCommand : Command
 
         BankModel model = (BankModel)values[0];
         SpriteVO spriteVO = (SpriteVO)values[1];
+        bool isForced2D = (bool)values[2];
 
         if (spriteVO.TileSetID == null)
         {
@@ -64,6 +65,9 @@ public class MoveSpriteToBankCommand : Command
 
         if (ret.Item1 == true)
         {
+            _ = BankModel.MetaDataCache.TryRemove((model.GUID, isForced2D), out _);
+            _ = BankModel.MetaDataCache.TryRemove((model.GUID, !isForced2D), out _);
+
             SignalManager.Get<BankImageUpdatedSignal>().Dispatch();
         }
         else

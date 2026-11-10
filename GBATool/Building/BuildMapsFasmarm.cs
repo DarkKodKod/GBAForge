@@ -242,6 +242,7 @@ public sealed class BuildMapsFasmarm : Building<BuildMapsFasmarm>
     private static async Task WriteMapTiles(StreamWriter outputFile, Tile[] mapTiles)
     {
         int countHexValues = 0;
+        bool force2dView = false;
 
         foreach (Tile tile in mapTiles)
         {
@@ -252,16 +253,16 @@ public sealed class BuildMapsFasmarm : Building<BuildMapsFasmarm>
                 continue;
             }
 
-            if (!BankModel.MetaDataCache.TryGetValue(bankModel.GUID, out BankImageMetaData? metaData))
+            if (!BankModel.MetaDataCache.TryGetValue((bankModel.GUID, force2dView), out BankImageMetaData? metaData))
             {
                 TileBlocks cellsCount = bankModel.GetBoundingBoxSize();
 
                 int imageWidth = cellsCount.width * BankUtils.SizeOfCellInPixels;
                 int imageHeight = cellsCount.height * BankUtils.SizeOfCellInPixels;
 
-                metaData = BankUtils.CreateImage(bankModel, false, imageWidth, imageHeight);
+                metaData = BankUtils.CreateImage(bankModel, force2dView, imageWidth, imageHeight);
 
-                _ = BankModel.MetaDataCache.TryAdd(bankModel.GUID, metaData);
+                _ = BankModel.MetaDataCache.TryAdd((bankModel.GUID, force2dView), metaData);
             }
 
             TileInfo? tileInfo = metaData.IndividualTileInfo.First(t => t.TilesetID == tile.TileSetID && t.OriginInTileset == tile.TileSetOrigin);

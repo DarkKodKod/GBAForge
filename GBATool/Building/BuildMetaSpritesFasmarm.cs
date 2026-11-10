@@ -168,7 +168,7 @@ public sealed class BuildMetaSpritesFasmarm : Building<BuildMetaSpritesFasmarm>
 
                     await WriteFrameAttribute0(sprite, outputFile, bankModel, model);
                     await WriteFrameAttribute1(sprite, outputFile, model);
-                    await WriteFrameAttribute2(sprite, outputFile, bankModel, model);
+                    await WriteFrameAttribute2(sprite, outputFile, bankModel, model, bankName);
                     await WriteFrameAttribute3(sprite, outputFile);
                 }
 
@@ -350,13 +350,13 @@ public sealed class BuildMetaSpritesFasmarm : Building<BuildMetaSpritesFasmarm>
         await outputFile.WriteAsync($"    dh ({attribute1Flipped})" + Environment.NewLine);
     }
 
-    private async Task WriteFrameAttribute2(CharacterSprite sprite, StreamWriter outputFile, BankModel bankModel, CharacterModel characterModel)
+    private async Task WriteFrameAttribute2(CharacterSprite sprite, StreamWriter outputFile, BankModel bankModel, CharacterModel characterModel, string bankName)
     {
         int index = 0;
 
         if (!bankModel.GetTileIndex(sprite.SpriteID, ref index))
         {
-            AddError("No sprite found in the bank");
+            AddWarning($"Missing sprite found in the bank {bankName}, most likely this sprite was removed from the origin. You can clean up the project to remove this warning.");
             return;
         }
 

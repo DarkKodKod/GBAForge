@@ -55,6 +55,9 @@ public class MoveDownSelectedSpriteElementCommand : Command
             return;
         }
 
+        BankModel bankModel = (BankModel)values[2];
+        bool isForced2D = (bool)values[3];
+
         int itemAtIndex = 0;
 
         for (int i = 0; i < listOfSprites.Count(); i++)
@@ -65,6 +68,9 @@ public class MoveDownSelectedSpriteElementCommand : Command
                 break;
             }
         }
+
+        _ = BankModel.MetaDataCache.TryRemove((bankModel.GUID, isForced2D), out _);
+        _ = BankModel.MetaDataCache.TryRemove((bankModel.GUID, !isForced2D), out _);
 
         SignalManager.Get<MoveDownSelectedSpriteElementSignal>().Dispatch(itemAtIndex);
     }

@@ -293,9 +293,10 @@ public class ProjectPropertiesDialogViewModel : ViewModel
             {
                 project.SpritePatternFormat = SelectedSpriteFormat;
 
-                SignalManager.Get<ReloadBankImageSignal>().Dispatch();
-
+                // nuke all the metadata cache because the pattern has changed for all of them
                 BankModel.MetaDataCache.Clear();
+
+                SignalManager.Get<ReloadBankImageSignal>().Dispatch();
             }
 
             project.Build.OutputFormatHeader = SelectedOutputFormatHeader;

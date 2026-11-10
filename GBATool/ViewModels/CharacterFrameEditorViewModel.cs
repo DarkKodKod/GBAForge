@@ -566,15 +566,17 @@ public class CharacterFrameEditorViewModel : ViewModel
             scaledHeight = (BankUtils.MaxTextureCellsWidth / 2) * BankUtils.SizeOfCellInPixels;
         }
 
-        if (!BankModel.MetaDataCache.TryGetValue(bankModel.GUID, out BankImageMetaData? metaData))
+        bool force2dView = true;
+
+        if (!BankModel.MetaDataCache.TryGetValue((bankModel.GUID, force2dView), out BankImageMetaData? metaData))
         {
             metaData = BankUtils.CreateImage(
                 bankModel,
-                true,
+                force2dView,
                 BankUtils.MaxTextureCellsWidth * BankUtils.SizeOfCellInPixels,
                 scaledHeight);
 
-            _ = BankModel.MetaDataCache.TryAdd(bankModel.GUID, metaData);
+            _ = BankModel.MetaDataCache.TryAdd((bankModel.GUID, force2dView), metaData);
         }
 
         List<SpriteControlVO> sprites = [];

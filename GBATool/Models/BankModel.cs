@@ -19,7 +19,7 @@ public record SpriteRef
 
 public class BankModel : AFileModel
 {
-    public static ConcurrentDictionary<string, BankImageMetaData> MetaDataCache { get; } = [];
+    public static ConcurrentDictionary<(string id, bool isForced2D), BankImageMetaData> MetaDataCache { get; } = [];
 
     private const string _extensionKey = "extensionBanks";
 
@@ -156,7 +156,7 @@ public class BankModel : AFileModel
         Sprites = list;
     }
 
-    public void CleanUpDeletedSprites()
+    public bool CleanUpDeletedSprites()
     {
         List<SpriteRef> idsToRemove = [];
 
@@ -187,6 +187,8 @@ public class BankModel : AFileModel
         {
             Sprites.Remove(spriteToRemove);
         }
+
+        return idsToRemove.Count > 0;
     }
 
     public TileBlocks GetBoundingBoxSize()

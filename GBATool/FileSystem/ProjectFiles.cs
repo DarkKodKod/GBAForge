@@ -3,6 +3,7 @@ using GBATool.Utils;
 using GBATool.VOs;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace GBATool.FileSystem;
 
@@ -34,7 +35,7 @@ public static class ProjectFiles
         return models;
     }
 
-    public static void SaveModel<T>(string guid, T model) where T : AFileModel
+    public static async Task SaveModelAsync<T>(string guid, T model) where T : AFileModel
     {
         if (string.IsNullOrEmpty(guid))
         {
@@ -46,7 +47,8 @@ public static class ProjectFiles
             if (pair.Key == guid)
             {
                 pair.Value.FileModel = model;
-                pair.Value.Save();
+
+                await pair.Value.SaveAsync().ConfigureAwait(false);
 
                 break;
             }

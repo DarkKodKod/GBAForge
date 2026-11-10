@@ -708,17 +708,14 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
             posY += MapUtils.CellSize;
         }
 
-        using (cropped.GetBitmapContext())
+        VisualMapTileVO[,] arrays = Util.ConvertListListInto2DArray(copyOfTilesRowVO);
+
+        SignalManager.Get<UseBitmapAsCursorSignal>().Dispatch(new(cropped, _bankModel.GUID, arrays));
+
+        if (ToolBarMapTool == MapFunctionality.Select)
         {
-            VisualMapTileVO[,] arrays = Util.ConvertListListInto2DArray(copyOfTilesRowVO);
-
-            SignalManager.Get<UseBitmapAsCursorSignal>().Dispatch(new(cropped, _bankModel.GUID, arrays));
-
-            if (ToolBarMapTool == MapFunctionality.Select)
-            {
-                // Once a cropped image is selected, the paint tool is automatically chosen
-                SignalManager.Get<CheckMapPaintToolSignal>().Dispatch();
-            }
+            // Once a cropped image is selected, the paint tool is automatically chosen
+            SignalManager.Get<CheckMapPaintToolSignal>().Dispatch();
         }
     }
 
@@ -942,11 +939,11 @@ public partial class BankViewerView : UserControl, INotifyPropertyChanged
     {
         SignalManager.Get<CleanupTileSetLinksSignal>().Dispatch();
 
-        if (!BankModel.MetaDataCache.TryGetValue(model.GUID, out BankImageMetaData? metaData))
+        if (!BankModel.MetaDataCache.TryGetValue((model.GUID, Force2DView), out BankImageMetaData? metaData))
         {
             metaData = BankUtils.CreateImage(model, Force2DView, CanvasWidth, CanvasHeight);
 
-            _ = BankModel.MetaDataCache.TryAdd(model.GUID, metaData);
+            _ = BankModel.MetaDataCache.TryAdd((model.GUID, Force2DView), metaData);
         }
 
         _metaData = metaData;

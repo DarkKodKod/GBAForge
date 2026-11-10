@@ -38,6 +38,7 @@ public class MainWindowViewModel : ViewModel
     public LoadConfigsCommand LoadConfigsCommand { get; } = new();
     public ShowAboutDialogCommand ShowAboutDialogCommand { get; } = new();
     public OpenBuildProjectCommand OpenBuildProjectCommand { get; } = new();
+    public CleanupProjectCommand CleanupProjectCommand { get; } = new();
     public OpenProjectPropertiesCommand OpenProjectPropertiesCommand { get; } = new();
     public ViewHelpCommand ViewHelpCommand { get; } = new();
     public CopyElementCommand CopyElementCommand { get; } = new();

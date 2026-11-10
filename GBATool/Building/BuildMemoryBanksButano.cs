@@ -110,11 +110,13 @@ public sealed class BuildMemoryBanksButano : Building<BuildMemoryBanksButano>
         int imageWidth = cellsCount.width * BankUtils.SizeOfCellInPixels;
         int imageHeight = cellsCount.height * BankUtils.SizeOfCellInPixels;
 
-        if (!BankModel.MetaDataCache.TryGetValue(bank.GUID, out BankImageMetaData? metaData))
-        {
-            metaData = BankUtils.CreateImage(bank, false, imageWidth, imageHeight);
+        bool force2dView = false;
 
-            _ = BankModel.MetaDataCache.TryAdd(bank.GUID, metaData);
+        if (!BankModel.MetaDataCache.TryGetValue((bank.GUID, force2dView), out BankImageMetaData? metaData))
+        {
+            metaData = BankUtils.CreateImage(bank, force2dView, imageWidth, imageHeight);
+
+            _ = BankModel.MetaDataCache.TryAdd((bank.GUID, force2dView), metaData);
         }
 
         if (metaData.Image == null)
