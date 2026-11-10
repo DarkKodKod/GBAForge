@@ -302,8 +302,13 @@ public static class Util
     {
         List<string> headerInfo = [];
 
+        ProjectModel projectModel = ModelManager.Get<ProjectModel>();
+        bool removeTime = projectModel.Build.OutputRemoveTimeFromTimestamp;
+
+        string dateTimeFormat = removeTime ? $"{DateTime.UtcNow:yyyy-M-dd}" : $"{DateTime.UtcNow:yyyy-M-dd H:mm:ss}";
+
         headerInfo.Add($"{commentCharacter} This file is auto generated!");
-        headerInfo.Add($"{commentCharacter} Time-stamp {DateTime.UtcNow:yyyy-M-dd H:mm:ss}");
+        headerInfo.Add($"{commentCharacter} Time-stamp {dateTimeFormat}");
         headerInfo.Add($"{commentCharacter} Exported by {Application.Current.FindResource(_projectNameKey)}");
 
         string version = GetRunningVersion()?.ToString() ?? string.Empty;

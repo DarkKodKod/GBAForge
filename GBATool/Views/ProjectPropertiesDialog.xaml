@@ -132,8 +132,13 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto" />
                     <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
                 </Grid.RowDefinitions>
-                <GroupBox Header="Paths" Padding="5" Grid.Row="0" Visibility="{Binding VisibilityPaths}">
+                <CheckBox 
+                    Grid.Row="0"
+	                Margin="10"
+	                IsChecked="{Binding RemoveTimeFromTimestamp}">Remove time from the output timestamp</CheckBox>
+                <GroupBox Header="Paths" Padding="5" Grid.Row="1" Visibility="{Binding VisibilityPaths}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="auto"/>
@@ -207,7 +212,7 @@
                         </DockPanel>
                     </Grid>
                 </GroupBox>
-                <GroupBox Header="File formats:" Grid.Row="1">
+                <GroupBox Header="File formats:" Grid.Row="2">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="auto"/>

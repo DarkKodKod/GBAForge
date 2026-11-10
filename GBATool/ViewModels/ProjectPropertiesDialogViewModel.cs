@@ -27,6 +27,7 @@ public class ProjectPropertiesDialogViewModel : ViewModel
     private OutputFormat _selectedOutputFormatScreenBlock = OutputFormat.None;
     private string _projectTitle = string.Empty;
     private int _softwareVersion = 0;
+    private bool _removeTimeFromTimestamp;
     private string _projectInitials = string.Empty;
     private string _developerId = string.Empty;
     private string _folderSourcePath = string.Empty;
@@ -248,6 +249,18 @@ public class ProjectPropertiesDialogViewModel : ViewModel
         }
     }
 
+    public bool RemoveTimeFromTimestamp
+    {
+        get => _removeTimeFromTimestamp;
+        set
+        {
+            _removeTimeFromTimestamp = value;
+            OnPropertyChanged(nameof(RemoveTimeFromTimestamp));
+
+            _changed = true;
+        }
+    }
+
     public string DeveloperId
     {
         get { return _developerId; }
@@ -304,6 +317,7 @@ public class ProjectPropertiesDialogViewModel : ViewModel
             project.Build.OutputFormatCharacters = SelectedOutputFormatCharacters;
             project.Build.OutputFormatScreenBlock = SelectedOutputFormatScreenBlock;
             project.Build.OutputFormatMaps = SelectedOutputFormatMaps;
+            project.Build.OutputRemoveTimeFromTimestamp = RemoveTimeFromTimestamp;
 
             project.ProjectTitle = ProjectTitle;
             project.SoftwareVersion = (byte)SoftwareVersion;
@@ -399,5 +413,6 @@ public class ProjectPropertiesDialogViewModel : ViewModel
         SelectedOutputFormatCharacters = project.Build.OutputFormatCharacters;
         SelectedOutputFormatScreenBlock = project.Build.OutputFormatScreenBlock;
         SelectedOutputFormatMaps = project.Build.OutputFormatMaps;
+        RemoveTimeFromTimestamp = project.Build.OutputRemoveTimeFromTimestamp;
     }
 }

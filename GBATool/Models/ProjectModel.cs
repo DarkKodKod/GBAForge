@@ -23,6 +23,7 @@ public class ProjectModel : ISingletonModel
         public OutputFormat OutputFormatCharacters { get; set; } = OutputFormat.Fasmarm;
         public OutputFormat OutputFormatScreenBlock { get; set; } = OutputFormat.Binary;
         public OutputFormat OutputFormatBackground { get; set; } = OutputFormat.None;
+        public bool OutputRemoveTimeFromTimestamp { get; set; }
 
         public BuildConfig()
         {
@@ -41,6 +42,7 @@ public class ProjectModel : ISingletonModel
             OutputFormatCharacters = OutputFormat.Fasmarm;
             OutputFormatScreenBlock = OutputFormat.Binary;
             OutputFormatBackground = OutputFormat.None;
+            OutputRemoveTimeFromTimestamp = false;
         }
     }
 
@@ -104,6 +106,7 @@ public class ProjectModel : ISingletonModel
         Build.OutputFormatBackground = copy.Build.OutputFormatBackground;
         Build.GeneratedHeadersPath = copy.Build.GeneratedHeadersPath;
         Build.GeneratedCPPsPath = copy.Build.GeneratedCPPsPath;
+        Build.OutputRemoveTimeFromTimestamp = copy.Build.OutputRemoveTimeFromTimestamp;
     }
 
     public void Load(string path, string filePath)
